@@ -16,6 +16,26 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 | `docs/progress.md` | Phased implementation plan with tasks | After completing tasks |
 | `docs/changelog.md` | History of all changes | After every significant change |
 
+## Phase-Based Development
+
+**Before starting each phase, run a thorough review:**
+
+1. **Re-read the PRD** — Understand what's being built and why
+2. **Review the phase tasks** in `docs/progress.md` — Know every task in the phase
+3. **Ask clarifying questions** — Surface ambiguities before writing code
+4. **Identify dependencies** — What from previous phases does this build on?
+5. **Check for blockers** — Are there unknowns that need resolution?
+
+**During each phase:**
+- Mark tasks as 🟡 in_progress when starting
+- Mark tasks as ✅ complete only when fully done
+- Update docs as you go, not at the end
+
+**After completing each phase:**
+- Update `docs/progress.md` with phase status
+- Add changelog entry summarizing the phase
+- Commit with clear message: `feat(phase-N): complete [phase name]`
+
 ## Commit Guidelines
 
 - **Never mention "Claude" or "AI" in commit messages** - commits should read as if written by a human developer

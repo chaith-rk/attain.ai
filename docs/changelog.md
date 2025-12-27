@@ -6,6 +6,36 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2024-12-27] PRD Review & Technical Decisions
+
+CTO-level review of PRD before development. Clarified ambiguities and made key architectural decisions.
+
+### Added
+- `user_profiles` table for timezone and chat summaries
+- Timezone handling strategy: UTC timestamps, local dates, IANA timezone strings
+- Character limits: title (100), description (500), intent/action (200), notes (300), messages (2000)
+- Error handling strategy with user-friendly messages and debug logging
+- First-time user experience: welcome message, learn-by-doing approach
+- Mobile web layout: chat-first, table behind toggle
+- LLM table update A/B test plan (function calling vs structured outputs)
+- Chat summarization strategy for long conversations (50+ messages)
+- Goal creation edge cases: no drafts, LLM pushes back on vague answers
+- Phase-based development workflow in CLAUDE.md
+
+### Changed
+- `messages.goal_id` now required (removed nullable general chat)
+- Added `updated_at` to all tables with auto-update triggers
+- Proactive LLM behavior: only when user sends message, therapist-friend tone
+- Table display: infinite scroll (collapse old months moved to v2)
+
+### Technical Decisions
+- Launch with OpenAI function calling, A/B test structured outputs after 2 weeks
+- Store 1 rolling summary per goal in JSONB for message history compression
+- Use `date-fns-tz` for timezone conversions
+- Error logging: structured JSON with full context for debugging
+
+---
+
 ## [2024-12-26] Project Initialization
 
 ### Added

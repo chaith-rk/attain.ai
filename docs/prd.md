@@ -18,15 +18,26 @@ attain.ai is a goal achievement app that combines an LLM chat interface with a s
 
 ## Data Model
 
+### user_profiles
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | uuid | Primary key (same as auth.users.id) |
+| timezone | text | IANA timezone string (e.g., "America/New_York") |
+| chat_summary | text (nullable) | Rolling summary of older messages per goal |
+| created_at | timestamp | When profile was created |
+| updated_at | timestamp | Last update |
+
 ### goals
 
 | Field | Type | Description |
 |-------|------|-------------|
 | id | uuid | Primary key |
 | user_id | uuid | Owner |
-| title | text | One-line goal title |
-| description | text (nullable) | Context from creation chat (monthly/weekly framing) |
+| title | text | One-line goal title (max 100 chars) |
+| description | text (nullable) | Context from creation chat (max 500 chars) |
 | created_at | timestamp | When goal was created |
+| updated_at | timestamp | Last update |
 
 ### goal_days
 
@@ -34,11 +45,12 @@ attain.ai is a goal achievement app that combines an LLM chat interface with a s
 |-------|------|-------------|
 | id | uuid | Primary key |
 | goal_id | uuid | Foreign key to goals |
-| date | date | The calendar date |
-| intent | text (nullable) | What user planned to do (filled during planning) |
-| action | text (nullable) | What user actually did (filled only from user report) |
-| notes | text (nullable) | LLM comparison of intent vs action |
+| date | date | The calendar date (stored as local date, not UTC) |
+| intent | text (nullable) | What user planned to do (max 200 chars) |
+| action | text (nullable) | What user actually did (max 200 chars) |
+| notes | text (nullable) | LLM comparison of intent vs action (max 300 chars) |
 | created_at | timestamp | When row was created |
+| updated_at | timestamp | Last update |
 
 ### messages
 
@@ -46,10 +58,19 @@ attain.ai is a goal achievement app that combines an LLM chat interface with a s
 |-------|------|-------------|
 | id | uuid | Primary key |
 | user_id | uuid | Owner |
-| goal_id | uuid (nullable) | Links message to a goal (null for general chat) |
+| goal_id | uuid | Links message to a goal (required, no general chat) |
 | role | text | "user" or "assistant" |
-| content | text | Message content |
+| content | text | Message content (max 2000 chars) |
 | created_at | timestamp | When message was sent |
+
+### Timezone Handling
+
+- All timestamps stored in UTC
+- User's timezone stored as IANA string in user_profiles (e.g., "America/New_York")
+- goal_days.date stored as local DATE (not timestamp) — represents the user's calendar day
+- "Today", "yesterday", and "overdue" calculated using user's timezone
+- Day boundaries flip at local midnight, not UTC midnight
+- Use `date-fns-tz` library for timezone conversions
 
 ---
 
@@ -63,10 +84,19 @@ attain.ai is a goal achievement app that combines an LLM chat interface with a s
 
 ### Main Area (when goal selected)
 
+**Desktop: Split view**
+- Left section: Table view
+- Right section: Chat view
+
+**Mobile web: Chat-first**
+- Chat is the primary view
+- Table accessible via toggle/tab
+- Sidebar collapses to hamburger menu
+
 **Left section: Table view**
 - Shows goal title and description at top
 - Table with columns: Date, Intent, Action, Notes
-- Displays: 1 week ahead + all history
+- Displays: 1 week ahead + all history (infinite scroll)
 - Today's row is highlighted
 - Empty cells show "—"
 
@@ -78,6 +108,13 @@ attain.ai is a goal achievement app that combines an LLM chat interface with a s
 ### Main Area (when creating goal)
 - Full-width guided chat
 - No table visible until goal is confirmed
+
+### First-Time User Experience
+- User signs up → lands on empty main area
+- Middle section shows welcome message: "Welcome to attain.ai. Let's set your first goal."
+- "Create Goal" button is prominently displayed
+- No complex onboarding — learn by doing
+- After first goal created, normal UI appears
 
 ---
 
@@ -110,8 +147,13 @@ User clicks "Create Goal" button
 ### Output After Confirmation
 - Goal created with title + description
 - 7 rows in goal_days (next 7 calendar days)
-- At least 3 rows have intent/action filled
+- At least 3 rows have intent filled (action is never pre-filled — it's what user actually did)
 - Chat history saved with goal_id
+
+### Goal Creation Edge Cases
+- If user abandons mid-creation (closes browser, navigates away): conversation is lost, no draft saved
+- If user gives vague answers: LLM pushes back gently until answers are specific enough to fill the UI
+- LLM should ask clarifying questions rather than accept unusable input like "I want to be better"
 
 ### Example LLM Output
 
@@ -180,8 +222,9 @@ User clicks "Create Goal" button
 
 ### Display Rules
 - Show 1 week ahead from today
-- Show all history
+- Show all history (infinite scroll)
 - Today's row highlighted
+- v2: Collapse old months for better performance
 
 ---
 
@@ -252,16 +295,26 @@ User clicks "Create Goal" button
 | Message Count | Approach |
 |---------------|----------|
 | Under 50 | Send all messages |
-| 50–200 | Last 30 full + LLM summary of older |
-| 200+ | Last 30 full + rolling summary |
+| 50+ | Last 30 full + stored summary of older messages |
+
+**Summary Strategy:**
+- When message count exceeds 50, generate a summary of messages 1-20
+- Store summary in user_profiles.chat_summary (one per goal, keyed by goal_id in JSON)
+- Summary is regenerated when another 50 messages accumulate
+- Summary captures: key context, challenges mentioned, preferences, patterns
 
 ### Proactive Behavior
 
+**Trigger:** Only when user sends a message (never unsolicited on page load)
+
+**Tone:** Like a good therapist friend — warm, mildly accountable, never pushy or guilt-inducing. Hold them in a caring way.
+
 | Situation | LLM Does |
 |-----------|----------|
-| Past day has Intent but no Action | "How did Monday's run go?" |
-| Multiple unfilled days | "We haven't caught up since Thursday — quick recap?" |
-| User mentioned challenge before | "Last week you said mornings were hard. Did that change?" |
+| Past day has Intent but no Action | "How did Monday's run go?" (gentle check-in) |
+| Multiple unfilled days | "We haven't caught up since Thursday — how's it been going?" |
+| User mentioned challenge before | "Last week you mentioned mornings were hard. Has anything shifted?" |
+| User reports missing a day | Acknowledge without judgment: "That happens. What got in the way?" |
 
 ### Chat Rules
 
@@ -306,6 +359,43 @@ User clicks "Create Goal" button
 | GPT-4o-mini | Cheapest OpenAI model, fast responses, sufficient for coaching |
 | shadcn/ui | Copy-paste components, full control, works great with Tailwind |
 | React Native for mobile | Code sharing with web, single JS/TS codebase |
+| OpenAI Function Calling | Structured output for table updates (see A/B test below) |
+
+### LLM Table Update Strategy
+
+The LLM needs to update goal_days based on chat. Two approaches to A/B test:
+
+**Option A: Function Calling (launch with this)**
+- Define functions: `update_intent`, `update_action`, `create_goal_day`, `delete_goal_day`
+- LLM calls functions with structured params: `{ date, value }`
+- Validated server-side before writing to DB
+
+**Option B: Structured Outputs (experiment)**
+- Use OpenAI's JSON schema mode
+- LLM returns `{ actions: [{ type, date, value }] }` in every response
+- Parse and execute actions
+
+**A/B Test Plan:**
+1. Launch with Function Calling (more battle-tested)
+2. After 2 weeks, implement Structured Outputs behind feature flag
+3. Compare: reliability, latency, token usage, error rates
+4. Pick winner based on data
+
+### Error Handling
+
+| Error Type | User Sees | Debug Info |
+|------------|-----------|------------|
+| OpenAI API down | "Having trouble connecting. Try again in a moment." + retry button | Log: full error, timestamp, request payload |
+| Rate limited | "You're chatting fast! Give me a second." + auto-retry after delay | Log: rate limit headers, user_id, frequency |
+| Malformed LLM response | "Something went wrong. Your message was saved — trying again." | Log: raw response, expected schema, parse error |
+| Database error | "Couldn't save that. Please try again." | Log: query, error code, stack trace |
+| Network timeout | "Connection timed out. Check your internet." | Log: timeout duration, endpoint |
+
+**Error Logging Requirements:**
+- All errors logged with: timestamp, user_id, goal_id, error type, full stack trace
+- Structured JSON logs for easy filtering
+- Include request/response payloads (sanitized of secrets)
+- Surface actionable errors to user; log everything for debugging
 
 ---
 
@@ -314,24 +404,35 @@ User clicks "Create Goal" button
 ### Supabase Schema
 
 ```sql
+-- User profiles table (extends auth.users)
+create table user_profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  timezone text not null default 'America/New_York',
+  chat_summaries jsonb default '{}', -- { goal_id: "summary text" }
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
 -- Goals table
 create table goals (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
-  title text not null,
-  description text,
-  created_at timestamp with time zone default now()
+  title text not null check (char_length(title) <= 100),
+  description text check (char_length(description) <= 500),
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
 );
 
 -- Goal days table
 create table goal_days (
   id uuid primary key default gen_random_uuid(),
   goal_id uuid references goals(id) on delete cascade,
-  date date not null,
-  intent text,
-  action text,
-  notes text,
+  date date not null, -- stored as local date in user's timezone
+  intent text check (char_length(intent) <= 200),
+  action text check (char_length(action) <= 200),
+  notes text check (char_length(notes) <= 300),
   created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
   unique(goal_id, date)
 );
 
@@ -339,9 +440,9 @@ create table goal_days (
 create table messages (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
-  goal_id uuid references goals(id) on delete cascade,
+  goal_id uuid references goals(id) on delete cascade not null,
   role text not null check (role in ('user', 'assistant')),
-  content text not null,
+  content text not null check (char_length(content) <= 2000),
   created_at timestamp with time zone default now()
 );
 
@@ -351,17 +452,39 @@ create index idx_goal_days_goal on goal_days(goal_id);
 create index idx_goal_days_date on goal_days(goal_id, date);
 create index idx_messages_goal on messages(goal_id);
 create index idx_messages_created on messages(goal_id, created_at);
+create index idx_user_profiles_id on user_profiles(id);
+
+-- Updated_at trigger function
+create or replace function update_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- Apply trigger to tables with updated_at
+create trigger goals_updated_at before update on goals
+  for each row execute function update_updated_at();
+create trigger goal_days_updated_at before update on goal_days
+  for each row execute function update_updated_at();
+create trigger user_profiles_updated_at before update on user_profiles
+  for each row execute function update_updated_at();
 ```
 
 ### Row Level Security (RLS)
 
 ```sql
 -- Enable RLS
+alter table user_profiles enable row level security;
 alter table goals enable row level security;
 alter table goal_days enable row level security;
 alter table messages enable row level security;
 
 -- Policies: users can only access their own data
+create policy "Users can manage own profile" on user_profiles
+  for all using (auth.uid() = id);
+
 create policy "Users can manage own goals" on goals
   for all using (auth.uid() = user_id);
 
@@ -408,9 +531,11 @@ The mockup shows:
 
 1. Should users be able to reorder goals in the sidebar?
 2. Should there be a "today" view across all goals?
-3. How do we handle timezone for date boundaries?
-4. Should completed goals auto-archive after X weeks of no activity?
-5. Do we need an onboarding flow for first-time users?
+3. Should completed goals auto-archive after X weeks of no activity?
+
+**Resolved:**
+- ~~Timezone handling~~ → Store timestamps UTC, dates as local, use IANA timezone string
+- ~~Onboarding flow~~ → Simple welcome message, learn by doing
 
 ---
 
@@ -419,3 +544,4 @@ The mockup shows:
 | Version | Date | Changes |
 |---------|------|---------|
 | v0 | Dec 2024 | Initial PRD |
+| v0.1 | Dec 2024 | Added: timezone handling, user_profiles table, character limits, error handling, mobile layout, first-time UX, function calling A/B test plan, chat summarization strategy, goal creation edge cases |
