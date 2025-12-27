@@ -79,6 +79,27 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 | Dependency add | ✅ | — | If tech stack changed | ✅ |
 | Config change | ✅ | — | — | ✅ |
 
+## Autonomy & Safety Policy
+
+Claude may freely perform these actions without confirmation:
+
+1. Install npm/pnpm dependencies **if common & safe** (≥1K weekly downloads), pin version numbers.
+2. Create new files/components/hooks/utilities as needed; follow existing directory conventions.
+3. Run local-only commands (`npm run dev`, `npm test`, `npm run lint`, `npm run build`) to verify changes.
+4. Generate Supabase migration files — **show SQL for review, never apply automatically beyond local dev**.
+5. Update `.env.example` (mock values only, never real keys).
+6. Format code automatically via Prettier/ESLint.
+7. Add or adjust TypeScript types in `/types`.
+8. Add minimal tests for new code or utilities.
+
+### Require confirmation for:
+- File deletions, breaking API changes, altering authentication/security.
+- Database schema edits that could affect existing data.
+- Production deployment config or environment changes.
+
+**Always** explain reasoning when adding new dependencies or external APIs.
+Treat environment containing `LIVE_DB_URL` or `PUBLIC_APP=true` as production — no autonomous changes allowed there.
+
 ## Code Style
 
 - Use TypeScript strict mode - no `any` types unless absolutely necessary
