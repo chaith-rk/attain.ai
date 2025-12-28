@@ -6,6 +6,27 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2025-12-27] Docs: Enhanced CLAUDE.md with Autonomous Execution Policy
+
+Updated project instructions to enable fully autonomous development workflow.
+
+### Changed
+- Added autonomous execution policy: proceed through all phases without waiting for explicit decisions
+- Emphasized immediate documentation updates (never batch, never defer)
+- Added instruction to share UI mockups when completing UI features
+- Specified all markdown files must be stored in `/docs` directory
+- Added thinking depth selection guidance for planning sessions: "think" < "think hard" < "think harder" < "ultrathink"
+- Updated phase completion workflow to automatically continue to next phase
+
+### Why
+- Enables faster development velocity by reducing decision-making friction
+- Ensures documentation stays synchronized with code changes in real-time
+- Provides visual feedback for UI development
+- Maintains consistent file organization
+- Allows for adaptive problem-solving complexity during planning
+
+---
+
 ## [2025-12-27] Phase 0 Complete: Project Setup
 
 Successfully completed foundational setup for attain.ai. All core dependencies installed and configured.

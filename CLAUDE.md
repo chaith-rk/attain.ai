@@ -18,23 +18,31 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 
 ## Phase-Based Development
 
+**Autonomous Execution Policy:**
+- **Proceed through ALL phases autonomously** — Execute tasks continuously without waiting for explicit user decisions unless specifically required
+- Default to making reasonable technical decisions based on PRD and best practices
+- Only ask for clarification when there are genuinely ambiguous requirements that could lead to different product outcomes
+- When in planning sessions, occasionally ask which thinking depth to use when relevant: "think" < "think hard" < "think harder" < "ultrathink"
+
 **Before starting each phase, run a thorough review:**
 
 1. **Re-read the PRD** — Understand what's being built and why
 2. **Review the phase tasks** in `docs/progress.md` — Know every task in the phase
-3. **Ask clarifying questions** — Surface ambiguities before writing code
+3. **Ask clarifying questions** — Surface ambiguities before writing code (only when truly necessary)
 4. **Identify dependencies** — What from previous phases does this build on?
 5. **Check for blockers** — Are there unknowns that need resolution?
 
 **During each phase:**
 - Mark tasks as 🟡 in_progress when starting
 - Mark tasks as ✅ complete only when fully done
-- Update docs as you go, not at the end
+- **Update docs IMMEDIATELY after every change** — never batch documentation updates
+- **Share UI mockups** — When completing UI features, provide a visual mockup or screenshot for review
 
 **After completing each phase:**
 - Update `docs/progress.md` with phase status
 - Add changelog entry summarizing the phase
 - Commit with clear message: `feat(phase-N): complete [phase name]`
+- Continue to next phase automatically
 
 ## Commit Guidelines
 
@@ -56,6 +64,7 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 
 **Documentation Standards (Staff Engineer Level):**
 
+- **CRITICAL: Update documentation IMMEDIATELY after every single change** — Never batch doc updates, never defer them
 - Treat docs as first-class citizens — code without updated docs is incomplete
 - Write docs as if onboarding a new engineer tomorrow
 - Changelog entries should explain *why*, not just *what*
@@ -63,6 +72,7 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 - If you touch a feature, review its docs for accuracy
 - Document edge cases and known limitations discovered during implementation
 - Keep architectural decisions recorded in PRD with rationale
+- **All markdown files** (documentation, specs, guides, etc.) **MUST be stored in the `/docs` directory**
 
 **Code Documentation:**
 - Add inline comments only for non-obvious logic or business rules
