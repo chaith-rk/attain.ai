@@ -6,6 +6,27 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-01] Docs: Enhanced OpenAI API Setup Instructions
+
+Improved README documentation to clarify OpenAI Platform API setup requirements.
+
+### Changed
+- Updated Prerequisites section to explicitly mention "OpenAI Platform account with billing enabled"
+- Added dedicated "Set Up OpenAI API" section (step 3) with complete instructions
+- Clarified difference between ChatGPT (web interface) and OpenAI Platform API
+- Added direct links to OpenAI Platform signup, billing, and API keys pages
+- Included cost information (GPT-4o-mini pricing)
+- Added "Where to get each value" guide for environment variables
+- Renumbered subsequent setup steps (4-6)
+
+### Why
+- Original documentation mentioned "An OpenAI API key" in prerequisites but didn't explain how to obtain it
+- No mention of billing requirement or cost expectations
+- Users might confuse ChatGPT (chat.openai.com) with OpenAI Platform API (platform.openai.com)
+- Missing this setup step blocks Phase 3 chat functionality
+
+---
+
 ## [2026-01-01] Phase 3 Complete: Chat UI + Basic LLM
 
 Implemented complete chat interface with LLM integration for conversational goal coaching.

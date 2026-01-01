@@ -20,7 +20,7 @@ Goal achievement through conversation. Plan your daily intents with an LLM coach
 
 - Node.js 18+ and npm
 - A Supabase account (free tier works)
-- An OpenAI API key
+- An OpenAI Platform account with billing enabled (see setup below)
 
 ### 1. Clone and Install
 
@@ -43,7 +43,20 @@ npm install
 
 See `supabase/README.md` for detailed instructions.
 
-### 3. Configure Environment Variables
+### 3. Set Up OpenAI API
+
+**Note:** This is the OpenAI Platform API, NOT ChatGPT. They are separate services.
+
+1. Create an OpenAI Platform account at [platform.openai.com/signup](https://platform.openai.com/signup)
+2. Add billing at [platform.openai.com/settings/organization/billing](https://platform.openai.com/settings/organization/billing)
+   - You'll need to add a payment method
+   - Cost: GPT-4o-mini is ~$0.15 per 1M input tokens (very cheap - typical conversations cost pennies)
+3. Create an API key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+   - Click "Create new secret key"
+   - Copy the key immediately (you won't see it again)
+   - Keep it secure - never commit it to git
+
+### 4. Configure Environment Variables
 
 Copy `.env.local.example` to `.env.local` and fill in your credentials:
 
@@ -59,7 +72,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 OPENAI_API_KEY=your-openai-api-key
 ```
 
-### 4. Run Development Server
+**Where to get each value:**
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`: From step 2 (Supabase project settings)
+- `OPENAI_API_KEY`: From step 3 (OpenAI Platform API keys page)
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
@@ -67,7 +84,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Build for Production
+### 6. Build for Production
 
 ```bash
 npm run build
