@@ -73,8 +73,8 @@ export function Sidebar({ goals, selectedGoalId, onSelectGoal, onCreateGoal }: S
       <div className="p-4 border-t">
         <Button
           onClick={signOut}
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground"
+          variant="outline"
+          className="w-full"
         >
           Sign out
         </Button>

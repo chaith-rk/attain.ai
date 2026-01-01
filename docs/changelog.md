@@ -6,6 +6,12 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-01] Style: Improve sign out button visibility
+
+Changed sign out button from ghost to outline variant for better visibility in sidebar.
+
+---
+
 ## [2026-01-01] Phase 1 Complete: Auth + Layout Shell
 
 Implemented authentication and the basic app shell.
