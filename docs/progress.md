@@ -1,229 +1,294 @@
 # attain.ai — Progress Tracker
 
-This document breaks down the project into manageable phases. Each phase builds on the previous one.
+This document tracks implementation using a **risk-first, vertical-slice** approach. LLM complexity grows gradually across phases.
+
+---
+
+## Key Decisions
+
+- **Approach:** Vertical slices — one user journey at a time
+- **Manual editing:** Yes, as escape hatch (can remove later)
+- **First LLM scope:** Today + tomorrow only, expand to any date in Phase 6
 
 ---
 
 ## How to Use This Document
 
 - **Status Legend:** ⬜ Not Started | 🟡 In Progress | ✅ Complete
-- Work through phases in order — each depends on the previous
-- Check off tasks as you complete them
-- Update the changelog when finishing significant work
+- Each phase has clear **Exit Criteria** — don't move on until all are checked
+- Update changelog after each phase
+
+---
+
+## Phase Overview
+
+| Phase | Deliverable | LLM Capability | Status |
+|-------|-------------|----------------|--------|
+| 0 | Project Setup | None | ✅ |
+| 1 | Auth + Layout Shell | None | ✅ |
+| 2 | Goal CRUD + Table + Manual Edit | None | ⬜ |
+| 3 | Chat UI + Basic LLM | Conversation only | ⬜ |
+| 4 | LLM → Intent (today/tomorrow) | Write intent | ⬜ |
+| 5 | LLM → Action + Notes | Write action, generate notes | ⬜ |
+| 6 | LLM → Any Date | Full date parsing | ⬜ |
+| 7 | Goal Creation via Chat | Structured output | ⬜ |
+| 8 | Multi-Goal + Polish | Full | ⬜ |
+| 9 | Deploy | Full | ⬜ |
 
 ---
 
 ## Phase 0: Project Setup ✅
 
-Get the foundation in place before writing any features.
+Foundation is in place.
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Initialize Next.js 14 project with TypeScript | ✅ | Set up manually with App Router |
-| Install Tailwind CSS | ✅ | v3 with PostCSS |
-| Set up shadcn/ui | ✅ | Configured with CSS variables |
-| Create Supabase project | ✅ | Migration files ready in `supabase/` |
-| Add environment variables | ✅ | `.env.local` template created |
-| Run database migrations | ✅ | SQL ready in `supabase/migrations/` |
-| Install Zustand | ✅ | Installed with initial store |
-| Set up project folder structure | ✅ | All directories created |
+| Task | Status |
+|------|--------|
+| Initialize Next.js 14 with TypeScript | ✅ |
+| Install Tailwind CSS + shadcn/ui | ✅ |
+| Create Supabase project | ✅ |
+| Set up project structure | ✅ |
 
-**Milestone:** App runs locally, connects to Supabase ✨
+**Milestone:** App runs locally ✨
 
 ---
 
-## Phase 1: Authentication ⬜
+## Phase 1: Auth + Layout Shell ✅
 
-Users need to log in before they can create goals.
+**Goal:** Users can sign up, log in, and see the app structure.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Set up Supabase Auth | ⬜ | Email + password to start |
-| Create login page | ⬜ | `/login` route |
-| Create signup page | ⬜ | `/signup` route |
-| Add auth middleware | ⬜ | Protect `/app` routes |
-| Create auth context/hook | ⬜ | `useAuth()` hook |
-| Add logout functionality | ⬜ | Button in sidebar |
-| Test login/signup flow | ⬜ | Manual testing |
+| Set up Supabase Auth | ✅ | Email + password |
+| Create `/login` page | ✅ | `app/login/page.tsx` |
+| Create `/signup` page | ✅ | Creates user_profile with timezone |
+| Add auth middleware | ✅ | Protect `/app/*` routes |
+| Create `useAuth()` hook | ✅ | Access user in components |
+| Build layout with sidebar | ✅ | Logo, empty goal list, Create Goal button |
+| Add logout button | ✅ | In sidebar footer |
 
-**Milestone:** Users can sign up, log in, and log out ✨
+### Exit Criteria
+- [x] Can sign up with email/password
+- [x] Can log in and see protected page
+- [x] Can log out
+- [x] Layout matches PRD structure
+
+**Milestone:** Users can authenticate and see empty app shell ✨
 
 ---
 
-## Phase 2: Layout & Navigation ⬜
+## Phase 2: Goal CRUD + Table + Manual Edit ⬜
 
-Build the app shell before adding features.
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Create main app layout | ⬜ | Sidebar + main area |
-| Build sidebar component | ⬜ | Logo, goal list, create button |
-| Add responsive design | ⬜ | Mobile-friendly sidebar |
-| Create empty states | ⬜ | "No goals yet" message |
-| Style with Tailwind | ⬜ | Match PRD mockup |
-
-**Milestone:** App shell looks like the PRD mockup ✨
-
----
-
-## Phase 3: Goal Management ⬜
-
-Basic goal CRUD without the chat interface.
+**Goal:** User can create a goal, see it in sidebar, view/edit the table manually.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create goals table in Supabase | ⬜ | Already in PRD schema |
-| Build goal creation form (simple) | ⬜ | Title + description for now |
+| Create goal form | ⬜ | Title + description |
+| Save goal to Supabase with RLS | ⬜ | |
+| Generate 7 empty goal_days on create | ⬜ | Today + 6 days |
 | Display goals in sidebar | ⬜ | Clickable list |
-| Add goal selection state | ⬜ | Zustand store |
-| Create goal detail view | ⬜ | Shows title + description |
-| Add delete goal functionality | ⬜ | With confirmation modal |
-| Enforce 3 goal limit | ⬜ | Disable button when at limit |
-| Add RLS policies | ⬜ | Users see only their goals |
+| Goal selection state | ⬜ | Zustand store |
+| Build table component | ⬜ | Date/Intent/Action/Notes |
+| Manual cell editing | ⬜ | Click to edit (escape hatch) |
+| Delete goal with modal | ⬜ | Confirmation required |
+| Enforce 3-goal limit | ⬜ | Disable create button |
 
-**Milestone:** Create, view, and delete goals (no chat yet) ✨
+### Exit Criteria
+- [ ] Can create goal with title/description
+- [ ] Goal appears in sidebar
+- [ ] Clicking goal shows its table
+- [ ] Can manually edit intent/action cells
+- [ ] Can delete goal
+- [ ] 3-goal limit enforced
 
----
-
-## Phase 4: Table View ⬜
-
-The table that shows intent vs action over time.
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Create goal_days table in Supabase | ⬜ | Already in PRD schema |
-| Build table component | ⬜ | Date, Intent, Action, Notes columns |
-| Display goal_days for selected goal | ⬜ | Query by goal_id |
-| Highlight today's row | ⬜ | Visual distinction |
-| Show 1 week ahead + history | ⬜ | Filter logic |
-| Handle empty cells | ⬜ | Show "—" |
-| Add loading states | ⬜ | Skeleton or spinner |
-
-**Milestone:** Table displays goal_days data correctly ✨
+**Milestone:** Full goal CRUD without LLM ✨
 
 ---
 
-## Phase 5: Chat Interface (UI Only) ⬜
+## Phase 3: Chat UI + Basic LLM ⬜
 
-Build the chat UI before connecting the LLM.
+**Goal:** Chat interface works, LLM responds conversationally (no table updates yet).
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create messages table in Supabase | ⬜ | Already in PRD schema |
-| Build chat container component | ⬜ | Header + messages + input |
-| Create message bubble component | ⬜ | User vs assistant styles |
-| Build chat input with send button | ⬜ | Text input + button |
-| Display message history | ⬜ | Query messages by goal_id |
-| Add auto-scroll to bottom | ⬜ | On new messages |
-| Save user messages to database | ⬜ | On send |
-| Add loading indicator | ⬜ | While waiting for response |
+| Create messages table queries | ⬜ | |
+| Build chat container | ⬜ | Header + messages + input |
+| Message bubble component | ⬜ | User vs assistant styles |
+| Save user messages to DB | ⬜ | |
+| Create `/api/chat` route | ⬜ | |
+| Set up OpenAI client | ⬜ | Server-side only |
+| Build system prompt v1 | ⬜ | Coaching persona |
+| Send goal context to LLM | ⬜ | Title, description |
+| Stream responses to UI | ⬜ | |
+| Save assistant messages to DB | ⬜ | |
+| Auto-scroll on new messages | ⬜ | |
 
-**Milestone:** Chat UI works, messages save to database ✨
+### Exit Criteria
+- [ ] Can send message, see streaming response
+- [ ] Messages persist across page refresh
+- [ ] LLM knows goal title/description
+- [ ] Chat feels responsive
+
+**Milestone:** Working chat with LLM (conversation only) ✨
 
 ---
 
-## Phase 6: LLM Integration ⬜
+## Phase 4: LLM → Intent (Today/Tomorrow) ⬜
 
-Connect OpenAI and make the chat functional.
+**Goal:** "I'll run today" or "I'll run tomorrow" updates the intent column.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Set up OpenAI API client | ⬜ | Server-side only |
-| Create chat API route | ⬜ | `/api/chat` endpoint |
-| Build system prompt | ⬜ | Coaching persona + context |
-| Send goal context to LLM | ⬜ | Title, description, recent goal_days |
-| Send message history to LLM | ⬜ | Last N messages |
-| Stream responses to UI | ⬜ | Better UX than waiting |
-| Save assistant messages | ⬜ | To messages table |
-| Handle API errors gracefully | ⬜ | Show error message |
+| Define function calling schema | ⬜ | `update_intent: { date: "today" \| "tomorrow", text }` |
+| Add goal_days context to LLM | ⬜ | Next 7 days |
+| Parse function calls from response | ⬜ | |
+| Validate date resolves correctly | ⬜ | |
+| Apply update to database | ⬜ | |
+| Show "Updated" feedback | ⬜ | |
+| Refetch table to show change | ⬜ | |
+| Handle errors gracefully | ⬜ | |
 
-**Milestone:** Chat with LLM works, responses stream in ✨
+### Test Cases
+- [ ] "I'll go for a run" → today's intent updated
+- [ ] "Tomorrow I want to read" → tomorrow's intent updated
+- [ ] "I'll run today and tomorrow" → both updated
+- [ ] Gibberish → no update, friendly response
+
+### Exit Criteria
+- [ ] 90%+ success on test cases
+- [ ] User sees table update after message
+- [ ] Errors don't crash the app
+
+**Milestone:** First LLM → table connection works ✨
 
 ---
 
-## Phase 7: LLM Actions ⬜
+## Phase 5: LLM → Action + Notes ⬜
 
-Let the LLM update the table based on conversation.
+**Goal:** "I did my run" updates action, LLM auto-generates notes.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Define function calling schema | ⬜ | For table updates |
-| Parse LLM intent to update goal_days | ⬜ | Extract date, intent, action |
-| Create goal_days via chat | ⬜ | "I'll run Tuesday" → creates row |
-| Update intent column | ⬜ | Planning flow |
-| Update action column | ⬜ | Check-in flow |
-| Auto-generate notes | ⬜ | Compare intent vs action |
-| Confirm before bulk updates | ⬜ | "I'll mark these complete, right?" |
-| Real-time table refresh | ⬜ | Supabase realtime or refetch |
+| Add `update_action` function | ⬜ | `{ date: "today" \| "tomorrow", text }` |
+| Trigger notes generation | ⬜ | After action updated |
+| Notes compare intent vs action | ⬜ | Supportive tone |
+| Handle partial completion | ⬜ | "I ran 2 miles instead of 3" |
 
-**Milestone:** LLM can read and write to the table ✨
+### Test Cases
+- [ ] "I did it" → action = "Completed", notes generated
+- [ ] "I ran but only 2 miles" → action captures partial
+- [ ] "I skipped today" → action = "Skipped", supportive notes
+
+### Exit Criteria
+- [ ] Action + notes flow works for today/tomorrow
+- [ ] Notes are supportive, not judgmental
+- [ ] Complete intent→action→notes cycle
+
+**Milestone:** Full single-day flow works ✨
 
 ---
 
-## Phase 8: Goal Creation Flow ⬜
+## Phase 6: LLM → Any Date ⬜
 
-Replace simple form with guided chat creation.
+**Goal:** "I'll run Tuesday" works with proper date resolution.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create goal creation chat mode | ⬜ | Full-width, no table |
-| Build guided question flow | ⬜ | 4 required questions |
+| Install date-fns + date-fns-tz | ⬜ | |
+| Change schema to ISO date strings | ⬜ | |
+| Add user timezone to context | ⬜ | |
+| LLM resolves relative dates | ⬜ | "Tuesday" → ISO date |
+| Validate date, create if needed | ⬜ | |
+| Handle ambiguous dates | ⬜ | "Tuesday" when today is Tuesday |
+| Handle date ranges | ⬜ | "Tuesday and Thursday" |
+
+### Test Cases
+- [ ] "I'll run Tuesday" → correct Tuesday intent
+- [ ] "Next Monday I'll rest" → correct date
+- [ ] "Tuesday and Thursday" → both updated
+- [ ] "Move Tuesday to Wednesday" → clears Tue, fills Wed
+
+### Exit Criteria
+- [ ] Relative dates work reliably
+- [ ] Timezone handling correct
+- [ ] Multi-day updates work
+
+**Milestone:** Natural date language works ✨
+
+---
+
+## Phase 7: Goal Creation via Chat ⬜
+
+**Goal:** Guided conversation creates goal + 7 days.
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Create "goal creation mode" state | ⬜ | |
+| Full-width chat UI | ⬜ | No table visible |
+| Creation system prompt | ⬜ | 4 required questions |
 | LLM proposes goal + 7 days | ⬜ | Structured output |
-| User confirms or edits | ⬜ | Before saving |
-| Save goal + goal_days + messages | ⬜ | All at once |
-| Transition to goal view | ⬜ | After confirmation |
+| Show proposal for confirmation | ⬜ | |
+| Save all on confirm | ⬜ | Goal + days + messages |
+| Handle "Change X" | ⬜ | LLM revises proposal |
+| Handle abandonment | ⬜ | No draft saved |
 
-**Milestone:** Full goal creation flow via chat ✨
+### Exit Criteria
+- [ ] Guided questions flow naturally
+- [ ] Proposal includes title + description + ~3 filled days
+- [ ] User can confirm or request changes
+- [ ] Saved goal appears in sidebar
 
----
-
-## Phase 9: Polish & Edge Cases ⬜
-
-Make it feel complete.
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Handle long conversation history | ⬜ | Summarize older messages |
-| Add proactive LLM prompts | ⬜ | "How did Monday go?" |
-| Goal switching preserves state | ⬜ | Save/restore correctly |
-| Error boundaries | ⬜ | Graceful error handling |
-| Loading skeletons | ⬜ | Better perceived performance |
-| Mobile responsive polish | ⬜ | Test on small screens |
-| Keyboard shortcuts | ⬜ | Enter to send, etc. |
-
-**Milestone:** App feels polished and handles edge cases ✨
+**Milestone:** Chat-guided goal creation works ✨
 
 ---
 
-## Phase 10: Deploy ⬜
+## Phase 8: Multi-Goal + Polish ⬜
 
-Ship it!
+**Goal:** Full app experience, ready for users.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Set up Vercel project | ⬜ | Connect to GitHub |
-| Configure environment variables | ⬜ | In Vercel dashboard |
-| Set up production Supabase | ⬜ | Or use same project |
+| Goal switching preserves state | ⬜ | |
+| Independent message histories | ⬜ | |
+| Streaming with loading indicator | ⬜ | |
+| Proactive LLM prompts | ⬜ | "How did Monday go?" |
+| Summarize long conversations | ⬜ | 50+ messages |
+| Today row highlighting | ⬜ | |
+| 1 week ahead + history | ⬜ | |
+| Mobile responsive layout | ⬜ | |
+| Error boundaries | ⬜ | |
+| Loading skeletons | ⬜ | |
+
+### Exit Criteria
+- [ ] 3 goals work independently
+- [ ] Switching goals is seamless
+- [ ] Mobile layout usable
+- [ ] No crashes on errors
+
+**Milestone:** Production-quality app ✨
+
+---
+
+## Phase 9: Deploy ⬜
+
+**Goal:** App is live.
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Set up Vercel project | ⬜ | |
+| Configure production env vars | ⬜ | |
+| Apply migrations to prod Supabase | ⬜ | |
 | Test production build | ⬜ | `npm run build` |
-| Deploy to Vercel | ⬜ | Push to main branch |
-| Set up custom domain (optional) | ⬜ | attain.ai if available |
-| Monitor for errors | ⬜ | Check logs |
+| Deploy to Vercel | ⬜ | |
+| Smoke test production | ⬜ | |
+| Set up error monitoring | ⬜ | |
 
-**Milestone:** App is live on the internet! 🚀
+### Exit Criteria
+- [ ] App accessible at production URL
+- [ ] Auth works in production
+- [ ] LLM calls work in production
+- [ ] No console errors
 
----
-
-## Future Phases (v2)
-
-These come after the core app is working.
-
-| Phase | Description |
-|-------|-------------|
-| Mobile App | React Native / Expo version |
-| Reminders | Push notifications to plan ahead |
-| Voice Input | Speak instead of type |
-| Weekly Summary | Auto-generated progress report |
-| Social Login | Google, Apple sign-in |
+**Milestone:** App is live! 🚀
 
 ---
 
@@ -232,15 +297,14 @@ These come after the core app is working.
 | Phase | Name | Status |
 |-------|------|--------|
 | 0 | Project Setup | ✅ |
-| 1 | Authentication | ⬜ |
-| 2 | Layout & Navigation | ⬜ |
-| 3 | Goal Management | ⬜ |
-| 4 | Table View | ⬜ |
-| 5 | Chat Interface (UI) | ⬜ |
-| 6 | LLM Integration | ⬜ |
-| 7 | LLM Actions | ⬜ |
-| 8 | Goal Creation Flow | ⬜ |
-| 9 | Polish & Edge Cases | ⬜ |
-| 10 | Deploy | ⬜ |
+| 1 | Auth + Layout Shell | ✅ |
+| 2 | Goal CRUD + Table + Manual Edit | ⬜ |
+| 3 | Chat UI + Basic LLM | ⬜ |
+| 4 | LLM → Intent (today/tomorrow) | ⬜ |
+| 5 | LLM → Action + Notes | ⬜ |
+| 6 | LLM → Any Date | ⬜ |
+| 7 | Goal Creation via Chat | ⬜ |
+| 8 | Multi-Goal + Polish | ⬜ |
+| 9 | Deploy | ⬜ |
 
-**Overall Progress:** 1 / 10 phases complete
+**Overall Progress:** 2 / 10 phases complete

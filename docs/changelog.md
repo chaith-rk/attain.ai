@@ -6,6 +6,73 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-01] Phase 1 Complete: Auth + Layout Shell
+
+Implemented authentication and the basic app shell.
+
+### Added
+- Login page (`/login`) with email/password authentication
+- Signup page (`/signup`) with user profile creation
+- Auth middleware protecting `/app/*` routes
+- `useAuth()` hook for client-side auth state
+- Sidebar component with:
+  - App logo/title
+  - "Create Goal" button (disabled at 3 goals)
+  - Goal list placeholder
+  - Sign out button
+- App layout with sidebar + main content area
+- Root page redirect (to `/login` or `/app` based on auth state)
+
+### Technical Details
+- Using client-side auth for better UX (instant feedback)
+- User timezone captured on signup via `Intl.DateTimeFormat`
+- Middleware handles route protection and redirects
+
+### Files Created
+- `app/login/page.tsx`
+- `app/signup/page.tsx`
+- `app/app/layout.tsx`
+- `app/app/page.tsx`
+- `components/Sidebar.tsx`
+- `hooks/useAuth.ts`
+- `lib/supabase/auth.ts`
+- `components/ui/button.tsx`, `input.tsx`, `label.tsx`, `card.tsx` (shadcn)
+
+---
+
+## [2026-01-01] Docs: Revised Roadmap with Risk-First, Vertical-Slice Approach
+
+Complete restructuring of the implementation plan to enable iterative LLM development.
+
+### Changed
+- Revised from 10 phases (horizontal layers) to 9 phases (vertical slices)
+- Moved LLM integration earlier in the roadmap (Phase 3-4 vs Phase 6-7)
+- Split LLM capability into incremental phases:
+  - Phase 4: Today/tomorrow only
+  - Phase 5: Action + notes generation
+  - Phase 6: Any date parsing
+- Added manual table editing as escape hatch (Phase 2)
+- Goal creation via chat now Phase 7 (was Phase 8)
+
+### Added
+- Clear exit criteria for each phase
+- Test cases for LLM phases
+- Risk mitigation strategies
+
+### Why
+- Original plan had LLM→table (the riskiest part) too late (Phase 7)
+- Can't one-shot an LLM-to-table integration — requires iteration
+- New plan: prove hard things early, expand from working base
+- Each phase ships demonstrable progress
+- LLM complexity grows gradually: today → tomorrow → any date
+
+### Technical Decisions
+- First LLM scope: "today" and "tomorrow" only (enum, not free dates)
+- Manual editing as safety net if LLM fails
+- Function calling with constrained date enum reduces hallucination risk
+
+---
+
 ## [2025-12-27] Docs: Enhanced CLAUDE.md with Autonomous Execution Policy
 
 Updated project instructions to enable fully autonomous development workflow.

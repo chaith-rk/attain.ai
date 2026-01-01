@@ -46,7 +46,8 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 
 ## Commit Guidelines
 
-- **Never mention "Claude" or "AI" in commit messages** - commits should read as if written by a human developer
+- **Never mention "Claude", "AI", or include any co-authored-by lines** - commits should read as if written by a human developer
+- **No generated-by footers or AI attribution** - keep commits clean and professional
 - Use conventional commit format: `type(scope): description`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
   - Examples: `feat(chat): add message streaming`, `fix(auth): handle session expiry`
