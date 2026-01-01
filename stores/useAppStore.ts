@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Goal, GoalDay } from '@/types'
+import type { Goal, GoalDay, Message } from '@/types'
 
 interface AppState {
   // Goals
@@ -20,6 +20,13 @@ interface AppState {
   setGoalDays: (goalDays: GoalDay[]) => void
   updateGoalDayInStore: (goalDay: GoalDay) => void
   setGoalDaysLoading: (loading: boolean) => void
+
+  // Messages for selected goal
+  messages: Message[]
+  messagesLoading: boolean
+  setMessages: (messages: Message[]) => void
+  addMessage: (message: Message) => void
+  setMessagesLoading: (loading: boolean) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -46,4 +53,11 @@ export const useAppStore = create<AppState>((set) => ({
     goalDays: state.goalDays.map(gd => gd.id === goalDay.id ? goalDay : gd),
   })),
   setGoalDaysLoading: (loading) => set({ goalDaysLoading: loading }),
+
+  // Messages
+  messages: [],
+  messagesLoading: false,
+  setMessages: (messages) => set({ messages }),
+  addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+  setMessagesLoading: (loading) => set({ messagesLoading: loading }),
 }))

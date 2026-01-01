@@ -6,6 +6,63 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-01] Phase 3 Complete: Chat UI + Basic LLM
+
+Implemented complete chat interface with LLM integration for conversational goal coaching.
+
+### Added
+- **Chat Components**
+  - `ChatView.tsx` - Main chat container with header, messages area, and input
+  - `MessageBubble.tsx` - Individual message display with user/assistant styling
+  - Auto-resizing textarea for message input
+  - Auto-scroll to latest message on new content
+  - Loading indicator while LLM is responding
+
+- **LLM Integration** (`app/api/chat/route.ts`)
+  - Edge runtime API route for optimal performance
+  - OpenAI GPT-4o-mini integration with streaming responses
+  - System prompt with coaching persona (`lib/prompts/coaching.ts`)
+  - Goal context injection (title, description)
+  - Full conversation history sent to LLM
+  - Streaming response display with real-time updates
+
+- **Message Management**
+  - Message queries in `lib/supabase/queries.ts`
+  - Message state in Zustand store
+  - Automatic save of user messages before API call
+  - Automatic save of assistant messages after stream completes
+  - Message persistence and loading per goal
+  - Messages load when goal is selected
+
+- **UI Updates**
+  - Split-screen layout in GoalView (table left, chat right)
+  - Chat panel fixed at 384px width
+  - Empty state messaging for new chats
+  - Keyboard shortcuts (Enter to send, Shift+Enter for new line)
+
+### Technical Details
+- Using native OpenAI streaming with ReadableStream (no Vercel AI SDK dependency issues)
+- Messages streamed character-by-character for responsive feel
+- User sees their message immediately, assistant response streams in
+- All messages persist to Supabase for conversation continuity
+- Edge runtime for low-latency API responses
+
+### Files Created/Modified
+- `components/ChatView.tsx` (new)
+- `components/MessageBubble.tsx` (new)
+- `lib/prompts/coaching.ts` (new)
+- `app/api/chat/route.ts` (new)
+- `stores/useAppStore.ts` (enhanced with message state)
+- `components/GoalView.tsx` (updated with split-screen layout)
+- `app/app/page.tsx` (updated with message loading and sending)
+
+### Known Limitations
+- LLM is conversation-only - cannot update the table yet (coming in Phase 4)
+- No message summarization yet (50+ messages will all be sent)
+- No error recovery UI if OpenAI API fails
+
+---
+
 ## [2026-01-01] Phase 2 Complete: Goal CRUD + Table + Manual Edit
 
 Implemented complete goal management functionality with manual table editing.

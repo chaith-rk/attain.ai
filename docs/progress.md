@@ -27,7 +27,7 @@ This document tracks implementation using a **risk-first, vertical-slice** appro
 | 0 | Project Setup | None | ✅ |
 | 1 | Auth + Layout Shell | None | ✅ |
 | 2 | Goal CRUD + Table + Manual Edit | None | ✅ |
-| 3 | Chat UI + Basic LLM | Conversation only | ⬜ |
+| 3 | Chat UI + Basic LLM | Conversation only | ✅ |
 | 4 | LLM → Intent (today/tomorrow) | Write intent | ⬜ |
 | 5 | LLM → Action + Notes | Write action, generate notes | ⬜ |
 | 6 | LLM → Any Date | Full date parsing | ⬜ |
@@ -104,29 +104,29 @@ Foundation is in place.
 
 ---
 
-## Phase 3: Chat UI + Basic LLM ⬜
+## Phase 3: Chat UI + Basic LLM ✅
 
 **Goal:** Chat interface works, LLM responds conversationally (no table updates yet).
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create messages table queries | ⬜ | |
-| Build chat container | ⬜ | Header + messages + input |
-| Message bubble component | ⬜ | User vs assistant styles |
-| Save user messages to DB | ⬜ | |
-| Create `/api/chat` route | ⬜ | |
-| Set up OpenAI client | ⬜ | Server-side only |
-| Build system prompt v1 | ⬜ | Coaching persona |
-| Send goal context to LLM | ⬜ | Title, description |
-| Stream responses to UI | ⬜ | |
-| Save assistant messages to DB | ⬜ | |
-| Auto-scroll on new messages | ⬜ | |
+| Create messages table queries | ✅ | fetchMessages, createMessage in queries.ts |
+| Build chat container | ✅ | ChatView component with header + messages + input |
+| Message bubble component | ✅ | MessageBubble with user/assistant styles |
+| Save user messages to DB | ✅ | Saved before API call |
+| Create `/api/chat` route | ✅ | Edge runtime with streaming |
+| Set up OpenAI client | ✅ | GPT-4o-mini, server-side only |
+| Build system prompt v1 | ✅ | Coaching persona in lib/prompts/coaching.ts |
+| Send goal context to LLM | ✅ | Title, description included in system prompt |
+| Stream responses to UI | ✅ | Native OpenAI streaming with ReadableStream |
+| Save assistant messages to DB | ✅ | Saved after stream completes |
+| Auto-scroll on new messages | ✅ | useRef + useEffect in ChatView |
 
 ### Exit Criteria
-- [ ] Can send message, see streaming response
-- [ ] Messages persist across page refresh
-- [ ] LLM knows goal title/description
-- [ ] Chat feels responsive
+- [x] Can send message, see streaming response
+- [x] Messages persist across page refresh
+- [x] LLM knows goal title/description
+- [x] Chat feels responsive
 
 **Milestone:** Working chat with LLM (conversation only) ✨
 
@@ -299,7 +299,7 @@ Foundation is in place.
 | 0 | Project Setup | ✅ |
 | 1 | Auth + Layout Shell | ✅ |
 | 2 | Goal CRUD + Table + Manual Edit | ✅ |
-| 3 | Chat UI + Basic LLM | ⬜ |
+| 3 | Chat UI + Basic LLM | ✅ |
 | 4 | LLM → Intent (today/tomorrow) | ⬜ |
 | 5 | LLM → Action + Notes | ⬜ |
 | 6 | LLM → Any Date | ⬜ |
@@ -307,4 +307,4 @@ Foundation is in place.
 | 8 | Multi-Goal + Polish | ⬜ |
 | 9 | Deploy | ⬜ |
 
-**Overall Progress:** 3 / 10 phases complete
+**Overall Progress:** 4 / 10 phases complete

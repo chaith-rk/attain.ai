@@ -1,5 +1,5 @@
 import { createClient } from './client'
-import type { Goal, GoalDay } from '@/types'
+import type { Goal, GoalDay, Message } from '@/types'
 
 // Goals
 export async function fetchGoals(): Promise<Goal[]> {
@@ -114,4 +114,42 @@ export async function createGoalWithDays(
   const goalDays = await createGoalDays(goal.id, dates)
 
   return { goal, goalDays }
+}
+
+// Messages
+export async function fetchMessages(goalId: string): Promise<Message[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('goal_id', goalId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function createMessage(
+  goalId: string,
+  role: 'user' | 'assistant',
+  content: string
+): Promise<Message> {
+  const supabase = createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      user_id: user.id,
+      goal_id: goalId,
+      role,
+      content,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
 }
