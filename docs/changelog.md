@@ -6,6 +6,57 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-01] Phase 2 Complete: Goal CRUD + Table + Manual Edit
+
+Implemented complete goal management functionality with manual table editing.
+
+### Added
+- **Goal Creation Dialog** (`components/CreateGoalDialog.tsx`)
+  - Form with title (required, 100 char limit) and description (optional, 500 char limit)
+  - Character counters for both fields
+  - Creates goal with 7 empty goal_days (today + 6 days)
+
+- **Goal Table View** (`components/GoalTable.tsx`)
+  - Displays Date, Intent, Action, Notes columns
+  - Today's row highlighted with visual indicator
+  - Smart date formatting (Today, Tomorrow, or "Mon, Jan 1")
+
+- **Inline Cell Editing**
+  - Click-to-edit for Intent and Action cells
+  - Enter to save, Escape to cancel
+  - Immediate database sync on blur
+
+- **Delete Goal Flow** (`components/DeleteGoalDialog.tsx`)
+  - Confirmation modal with warning about data loss
+  - Cascades to goal_days and messages via Supabase RLS
+
+- **Supabase Queries** (`lib/supabase/queries.ts`)
+  - CRUD operations for goals and goal_days
+  - Combined createGoalWithDays function for atomic creation
+
+- **Enhanced Zustand Store** (`stores/useAppStore.ts`)
+  - Goals array with loading state
+  - Goal days for selected goal
+  - Add/remove/update operations
+
+### Technical Notes
+- Goal days stored as local date strings (YYYY-MM-DD)
+- Notes column read-only (will be LLM-generated in Phase 5)
+- 3-goal limit enforced via UI (Create Goal button disabled)
+
+### Files Created/Modified
+- `components/CreateGoalDialog.tsx` (new)
+- `components/DeleteGoalDialog.tsx` (new)
+- `components/GoalTable.tsx` (new)
+- `components/GoalView.tsx` (new)
+- `components/Sidebar.tsx` (updated with loading state)
+- `lib/supabase/queries.ts` (new)
+- `stores/useAppStore.ts` (enhanced)
+- `app/app/page.tsx` (full rewrite)
+- Added shadcn components: dialog, alert-dialog, table, textarea
+
+---
+
 ## [2026-01-01] Style: Improve sign out button visibility
 
 Changed sign out button from ghost to outline variant for better visibility in sidebar.

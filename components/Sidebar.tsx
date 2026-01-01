@@ -6,12 +6,19 @@ import { Goal } from '@/types'
 
 interface SidebarProps {
   goals: Goal[]
+  goalsLoading?: boolean
   selectedGoalId: string | null
   onSelectGoal: (id: string) => void
   onCreateGoal: () => void
 }
 
-export function Sidebar({ goals, selectedGoalId, onSelectGoal, onCreateGoal }: SidebarProps) {
+export function Sidebar({
+  goals,
+  goalsLoading = false,
+  selectedGoalId,
+  onSelectGoal,
+  onCreateGoal,
+}: SidebarProps) {
   const { signOut } = useAuth()
   const canCreateGoal = goals.length < 3
 
@@ -41,7 +48,11 @@ export function Sidebar({ goals, selectedGoalId, onSelectGoal, onCreateGoal }: S
 
       {/* Goal List */}
       <div className="flex-1 overflow-y-auto">
-        {goals.length === 0 ? (
+        {goalsLoading ? (
+          <div className="p-4 text-sm text-muted-foreground text-center">
+            Loading...
+          </div>
+        ) : goals.length === 0 ? (
           <div className="p-4 text-sm text-muted-foreground text-center">
             No goals yet
           </div>

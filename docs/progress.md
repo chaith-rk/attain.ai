@@ -26,7 +26,7 @@ This document tracks implementation using a **risk-first, vertical-slice** appro
 |-------|-------------|----------------|--------|
 | 0 | Project Setup | None | ✅ |
 | 1 | Auth + Layout Shell | None | ✅ |
-| 2 | Goal CRUD + Table + Manual Edit | None | ⬜ |
+| 2 | Goal CRUD + Table + Manual Edit | None | ✅ |
 | 3 | Chat UI + Basic LLM | Conversation only | ⬜ |
 | 4 | LLM → Intent (today/tomorrow) | Write intent | ⬜ |
 | 5 | LLM → Action + Notes | Write action, generate notes | ⬜ |
@@ -76,29 +76,29 @@ Foundation is in place.
 
 ---
 
-## Phase 2: Goal CRUD + Table + Manual Edit ⬜
+## Phase 2: Goal CRUD + Table + Manual Edit ✅
 
 **Goal:** User can create a goal, see it in sidebar, view/edit the table manually.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create goal form | ⬜ | Title + description |
-| Save goal to Supabase with RLS | ⬜ | |
-| Generate 7 empty goal_days on create | ⬜ | Today + 6 days |
-| Display goals in sidebar | ⬜ | Clickable list |
-| Goal selection state | ⬜ | Zustand store |
-| Build table component | ⬜ | Date/Intent/Action/Notes |
-| Manual cell editing | ⬜ | Click to edit (escape hatch) |
-| Delete goal with modal | ⬜ | Confirmation required |
-| Enforce 3-goal limit | ⬜ | Disable create button |
+| Create goal form | ✅ | Title + description dialog |
+| Save goal to Supabase with RLS | ✅ | Via lib/supabase/queries.ts |
+| Generate 7 empty goal_days on create | ✅ | Today + 6 days |
+| Display goals in sidebar | ✅ | Clickable list with loading state |
+| Goal selection state | ✅ | Zustand store enhanced |
+| Build table component | ✅ | Date/Intent/Action/Notes columns |
+| Manual cell editing | ✅ | Click to edit, Enter/Escape/blur to save |
+| Delete goal with modal | ✅ | Confirmation required |
+| Enforce 3-goal limit | ✅ | Disable create button at limit |
 
 ### Exit Criteria
-- [ ] Can create goal with title/description
-- [ ] Goal appears in sidebar
-- [ ] Clicking goal shows its table
-- [ ] Can manually edit intent/action cells
-- [ ] Can delete goal
-- [ ] 3-goal limit enforced
+- [x] Can create goal with title/description
+- [x] Goal appears in sidebar
+- [x] Clicking goal shows its table
+- [x] Can manually edit intent/action cells
+- [x] Can delete goal
+- [x] 3-goal limit enforced
 
 **Milestone:** Full goal CRUD without LLM ✨
 
@@ -298,7 +298,7 @@ Foundation is in place.
 |-------|------|--------|
 | 0 | Project Setup | ✅ |
 | 1 | Auth + Layout Shell | ✅ |
-| 2 | Goal CRUD + Table + Manual Edit | ⬜ |
+| 2 | Goal CRUD + Table + Manual Edit | ✅ |
 | 3 | Chat UI + Basic LLM | ⬜ |
 | 4 | LLM → Intent (today/tomorrow) | ⬜ |
 | 5 | LLM → Action + Notes | ⬜ |
@@ -307,4 +307,4 @@ Foundation is in place.
 | 8 | Multi-Goal + Polish | ⬜ |
 | 9 | Deploy | ⬜ |
 
-**Overall Progress:** 2 / 10 phases complete
+**Overall Progress:** 3 / 10 phases complete
