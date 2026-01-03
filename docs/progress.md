@@ -104,9 +104,11 @@ Foundation is in place.
 
 ---
 
-## Phase 3: Chat UI + Basic LLM ✅
+## Phase 3: Chat UI + Basic LLM 🟡
 
 **Goal:** Chat interface works, LLM responds conversationally (no table updates yet).
+
+**Status:** Code complete, pending end-to-end testing with OpenAI API key.
 
 | Task | Status | Notes |
 |------|--------|-------|
@@ -117,18 +119,21 @@ Foundation is in place.
 | Create `/api/chat` route | ✅ | Edge runtime with streaming |
 | Set up OpenAI client | ✅ | GPT-4o-mini, server-side only |
 | Build system prompt v1 | ✅ | Coaching persona in lib/prompts/coaching.ts |
-| Send goal context to LLM | ✅ | Title, description included in system prompt |
+| Send goal context to LLM | ✅ | Title, description, goal_days in system prompt |
 | Stream responses to UI | ✅ | Native OpenAI streaming with ReadableStream |
 | Save assistant messages to DB | ✅ | Saved after stream completes |
 | Auto-scroll on new messages | ✅ | useRef + useEffect in ChatView |
+| Add function calling tools | ✅ | update_intent tool in lib/openai/tools.ts |
 
-### Exit Criteria
-- [x] Can send message, see streaming response
-- [x] Messages persist across page refresh
-- [x] LLM knows goal title/description
-- [x] Chat feels responsive
+### Exit Criteria (Pending Testing)
+- [ ] Can send message, see streaming response
+- [ ] Messages persist across page refresh
+- [ ] LLM knows goal title/description
+- [ ] Chat feels responsive
 
-**Milestone:** Working chat with LLM (conversation only) ✨
+**Next Steps:** Add OPENAI_API_KEY to .env.local, test chat end-to-end
+
+**Milestone:** Working chat with LLM (conversation only) ✨ *(not yet verified)*
 
 ---
 
@@ -299,7 +304,7 @@ Foundation is in place.
 | 0 | Project Setup | ✅ |
 | 1 | Auth + Layout Shell | ✅ |
 | 2 | Goal CRUD + Table + Manual Edit | ✅ |
-| 3 | Chat UI + Basic LLM | ✅ |
+| 3 | Chat UI + Basic LLM | 🟡 (code complete, pending testing) |
 | 4 | LLM → Intent (today/tomorrow) | ⬜ |
 | 5 | LLM → Action + Notes | ⬜ |
 | 6 | LLM → Any Date | ⬜ |
@@ -307,4 +312,4 @@ Foundation is in place.
 | 8 | Multi-Goal + Polish | ⬜ |
 | 9 | Deploy | ⬜ |
 
-**Overall Progress:** 4 / 10 phases complete
+**Overall Progress:** 3 / 10 phases complete, Phase 3 in progress (awaiting API key testing)
