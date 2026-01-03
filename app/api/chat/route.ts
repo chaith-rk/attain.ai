@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCoachingSystemPrompt } from '@/lib/prompts/coaching'
+import { tools } from '@/lib/openai/tools'
 import OpenAI from 'openai'
+import type { ChatCompletionMessageParam, ChatCompletionChunk } from 'openai/resources/chat/completions'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -54,6 +56,19 @@ export async function POST(req: Request) {
       return new Response('Failed to save message', { status: 500 })
     }
 
+    // Fetch goal days for context
+    const { data: goalDays, error: goalDaysError } = await supabase
+      .from('goal_days')
+      .select('*')
+      .eq('goal_id', goalId)
+      .order('date', { ascending: true })
+      .limit(7)
+
+    if (goalDaysError) {
+      console.error('Error fetching goal days:', goalDaysError)
+      return new Response('Failed to fetch goal days', { status: 500 })
+    }
+
     // Fetch conversation history
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
@@ -67,10 +82,10 @@ export async function POST(req: Request) {
     }
 
     // Build messages for OpenAI
-    const openaiMessages = [
+    const openaiMessages: ChatCompletionMessageParam[] = [
       {
-        role: 'system' as const,
-        content: getCoachingSystemPrompt(goal),
+        role: 'system',
+        content: getCoachingSystemPrompt(goal, goalDays || []),
       },
       ...messages.map((msg) => ({
         role: msg.role as 'user' | 'assistant',
@@ -78,10 +93,11 @@ export async function POST(req: Request) {
       })),
     ]
 
-    // Call OpenAI with streaming
+    // Call OpenAI with streaming and tools
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: openaiMessages,
+      tools,
       temperature: 0.7,
       stream: true,
     })
@@ -89,15 +105,100 @@ export async function POST(req: Request) {
     // Create a custom readable stream
     const encoder = new TextEncoder()
     let fullResponse = ''
+    let toolCalls: Array<{
+      id: string
+      name: string
+      arguments: string
+    }> = []
+    let currentToolCall: { id?: string; name?: string; arguments?: string } | null = null
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of response) {
-            const content = chunk.choices[0]?.delta?.content || ''
-            if (content) {
-              fullResponse += content
-              controller.enqueue(encoder.encode(content))
+            const delta = chunk.choices[0]?.delta
+
+            // Handle content streaming
+            if (delta?.content) {
+              fullResponse += delta.content
+              controller.enqueue(encoder.encode(delta.content))
+            }
+
+            // Handle tool calls
+            if (delta?.tool_calls) {
+              for (const toolCall of delta.tool_calls) {
+                if (toolCall.index !== undefined) {
+                  if (!currentToolCall || toolCall.index > toolCalls.length - 1) {
+                    // Start new tool call
+                    currentToolCall = {
+                      id: toolCall.id || '',
+                      name: toolCall.function?.name || '',
+                      arguments: toolCall.function?.arguments || '',
+                    }
+                    toolCalls.push(currentToolCall as any)
+                  } else {
+                    // Continue existing tool call
+                    currentToolCall = toolCalls[toolCall.index]
+                    if (toolCall.function?.arguments) {
+                      currentToolCall.arguments += toolCall.function.arguments
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Execute tool calls if any
+          if (toolCalls.length > 0) {
+            for (const toolCall of toolCalls) {
+              if (toolCall.name === 'update_intent') {
+                try {
+                  const args = JSON.parse(toolCall.arguments)
+                  const { date, intent } = args
+
+                  // Resolve date to actual date string
+                  const today = new Date().toISOString().split('T')[0]
+                  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                  const targetDate = date === 'today' ? today : tomorrow
+
+                  // Find or create goal_day
+                  let { data: goalDay, error: fetchError } = await supabase
+                    .from('goal_days')
+                    .select('*')
+                    .eq('goal_id', goalId)
+                    .eq('date', targetDate)
+                    .single()
+
+                  if (fetchError || !goalDay) {
+                    // Create new goal_day if it doesn't exist
+                    const { data: newGoalDay, error: createError } = await supabase
+                      .from('goal_days')
+                      .insert({
+                        goal_id: goalId,
+                        date: targetDate,
+                        intent,
+                      })
+                      .select()
+                      .single()
+
+                    if (createError) {
+                      console.error('Error creating goal_day:', createError)
+                    }
+                  } else {
+                    // Update existing goal_day
+                    const { error: updateError } = await supabase
+                      .from('goal_days')
+                      .update({ intent })
+                      .eq('id', goalDay.id)
+
+                    if (updateError) {
+                      console.error('Error updating intent:', updateError)
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error processing tool call:', error)
+                }
+              }
             }
           }
 

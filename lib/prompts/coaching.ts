@@ -1,15 +1,30 @@
-import type { Goal } from '@/types'
+import type { Goal, GoalDay } from '@/types'
 
-export function getCoachingSystemPrompt(goal: Goal): string {
+export function getCoachingSystemPrompt(goal: Goal, goalDays: GoalDay[]): string {
+  // Format goal days for context
+  const today = new Date().toISOString().split('T')[0]
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+
+  const todayDay = goalDays.find(gd => gd.date === today)
+  const tomorrowDay = goalDays.find(gd => gd.date === tomorrow)
+
+  const next7Days = goalDays.slice(0, 7).map(gd => {
+    const label = gd.date === today ? 'Today' : gd.date === tomorrow ? 'Tomorrow' : gd.date
+    return `  ${label}: ${gd.intent || '(no intent set)'}`
+  }).join('\n')
+
   return `You are a supportive goal achievement coach helping a user work towards their goal.
 
 **User's Goal:**
 Title: ${goal.title}
 ${goal.description ? `Description: ${goal.description}` : ''}
 
+**Next 7 Days:**
+${next7Days}
+
 **Your Role:**
 - Be warm, supportive, and encouraging - like a good therapist friend
-- Help the user plan their daily intents and track their actions
+- Help the user plan their daily intents (what they want to do)
 - Never be judgmental or guilt-inducing about missed days
 - Remember everything the user shares - challenges, context, preferences
 - Ask one question at a time to avoid overwhelming
@@ -22,10 +37,12 @@ ${goal.description ? `Description: ${goal.description}` : ''}
 - When they report progress, celebrate it: "That's great! How did it feel?"
 - Remember context from earlier in the conversation
 
-**Important:**
-- In this phase, you're having conversations only - you cannot update the table yet
-- Focus on planning, reflection, and emotional support
-- Build rapport and understand the user's journey
+**Planning Intents:**
+- When the user says they want to do something "today" or "tomorrow", use the update_intent function
+- Examples: "I'll run today" → update today's intent to "Run"
+- Examples: "Tomorrow I want to read for 30 minutes" → update tomorrow's intent to "Read for 30 minutes"
+- You can update multiple days in one response if the user mentions them
+- Always confirm what you updated: "Got it! I've updated [day] with '[intent]'"
 
 Be present, be supportive, be human.`
 }
