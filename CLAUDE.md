@@ -1,12 +1,12 @@
 # CLAUDE.md
 
-Project-specific instructions for Claude Code.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
 attain.ai is a goal achievement app with an LLM chat interface and structured table view. Users create up to 3 goals, plan daily intents through conversation, and track actions over time.
 
-**Tech Stack:** Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, Zustand, Supabase, OpenAI GPT-4o-mini, Vercel
+**Tech Stack:** Next.js 14 App Router, TypeScript, Tailwind CSS, shadcn/ui, Zustand, Supabase (PostgreSQL + Auth), OpenAI GPT-4o-mini, Vercel
 
 ## Key Documents
 
@@ -16,6 +16,53 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 | `docs/progress.md` | Phased implementation plan with tasks | After completing tasks |
 | `docs/changelog.md` | History of all changes | After every significant change |
 
+## Development Commands
+
+```bash
+npm run dev          # Start dev server on localhost:3000
+npm run build        # Build for production
+npm run lint         # Run ESLint
+```
+
+## Architecture Overview
+
+### Data Flow Pattern
+
+**Client Components → Zustand Store → lib/supabase/queries.ts → Supabase**
+
+- **UI Components** render from Zustand store (`stores/useAppStore.ts`)
+- **Query functions** in `lib/supabase/queries.ts` handle all DB operations
+- **Main orchestrator** is `app/app/page.tsx` - loads data, handles mutations, manages streaming
+
+### State Management
+
+Single Zustand store with **goal-scoped state**:
+- `goals[]` - All user's goals
+- `selectedGoalId` - Currently selected goal
+- `goalDays[]` - goal_days for selected goal only
+- `messages[]` - messages for selected goal only
+
+**Critical:** When switching goals, `goalDays` and `messages` are refetched and replaced (not merged).
+
+### Supabase Client Pattern
+
+**Use the correct client for your context:**
+
+- **Client Components**: `import { createClient } from '@/lib/supabase/client'`
+- **Server Components / API Routes**: `import { createClient } from '@/lib/supabase/server'`
+
+All queries in `lib/supabase/queries.ts` use the browser client.
+
+### LLM Streaming Flow
+
+1. User sends message → `app/app/page.tsx::handleSendMessage()`
+2. POST to `/api/chat/route.ts` with `goalId` + `message`
+3. API route builds context from goal + messages + goal_days
+4. OpenAI streams response back to client
+5. Client updates UI in real-time, then refetches messages from DB
+
+**Function calling:** `lib/openai/tools.ts` defines schemas. API route parses tool calls and executes them.
+
 ## Phase-Based Development
 
 **Autonomous Execution Policy:**
@@ -24,13 +71,12 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 - Only ask for clarification when there are genuinely ambiguous requirements that could lead to different product outcomes
 - When in planning sessions, occasionally ask which thinking depth to use when relevant: "think" < "think hard" < "think harder" < "ultrathink"
 
-**Before starting each phase, run a thorough review:**
-
-1. **Re-read the PRD** — Understand what's being built and why
-2. **Review the phase tasks** in `docs/progress.md` — Know every task in the phase
-3. **Ask clarifying questions** — Surface ambiguities before writing code (only when truly necessary)
-4. **Identify dependencies** — What from previous phases does this build on?
-5. **Check for blockers** — Are there unknowns that need resolution?
+**Before starting each phase:**
+1. Re-read the PRD (`docs/prd.md`) — Understand what's being built and why
+2. Review the phase tasks in `docs/progress.md` — Know every task in the phase
+3. Ask clarifying questions — Surface ambiguities before writing code (only when truly necessary)
+4. Identify dependencies — What from previous phases does this build on?
+5. Check for blockers — Are there unknowns that need resolution?
 
 **During each phase:**
 - Mark tasks as 🟡 in_progress when starting
@@ -63,22 +109,11 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 3. **`docs/prd.md`** — Sync any requirement changes, schema updates, or tech decisions
 4. **`README.md`** — Update if new dependencies, env vars, or setup steps added
 
-**Documentation Standards (Staff Engineer Level):**
-
-- **CRITICAL: Update documentation IMMEDIATELY after every single change** — Never batch doc updates, never defer them
-- Treat docs as first-class citizens — code without updated docs is incomplete
-- Write docs as if onboarding a new engineer tomorrow
-- Changelog entries should explain *why*, not just *what*
-- Progress updates should reflect actual state — no optimistic marking
-- If you touch a feature, review its docs for accuracy
-- Document edge cases and known limitations discovered during implementation
-- Keep architectural decisions recorded in PRD with rationale
-- **All markdown files** (documentation, specs, guides, etc.) **MUST be stored in the `/docs` directory**
-
-**Code Documentation:**
-- Add inline comments only for non-obvious logic or business rules
-- Complex functions get a brief docstring explaining purpose and edge cases
-- No commented-out code — delete it (git has history)
+**Documentation Standards:**
+- **CRITICAL: Update docs IMMEDIATELY after every change** — never batch updates
+- Changelog entries explain *why*, not just *what*
+- Progress updates reflect actual state — no optimistic marking
+- All markdown files go in `/docs` directory
 
 **When to Update Which Doc:**
 
@@ -94,64 +129,50 @@ attain.ai is a goal achievement app with an LLM chat interface and structured ta
 
 Claude may freely perform these actions without confirmation:
 
-1. Install npm/pnpm dependencies **if common & safe** (≥1K weekly downloads), pin version numbers.
-2. Create new files/components/hooks/utilities as needed; follow existing directory conventions.
-3. Run local-only commands (`npm run dev`, `npm test`, `npm run lint`, `npm run build`) to verify changes.
-4. Generate Supabase migration files — **show SQL for review, never apply automatically beyond local dev**.
-5. Update `.env.example` (mock values only, never real keys).
-6. Format code automatically via Prettier/ESLint.
-7. Add or adjust TypeScript types in `/types`.
-8. Add minimal tests for new code or utilities.
+1. Install npm dependencies **if common & safe** (≥1K weekly downloads), pin version numbers
+2. Create new files/components/hooks/utilities as needed; follow existing directory conventions
+3. Run local-only commands (`npm run dev`, `npm test`, `npm run lint`, `npm run build`) to verify changes
+4. Generate Supabase migration files — **show SQL for review, never apply automatically beyond local dev**
+5. Update `.env.local.example` (mock values only, never real keys)
+6. Format code automatically via Prettier/ESLint
+7. Add or adjust TypeScript types in `/types`
+8. Add minimal tests for new code or utilities
 
 ### Require confirmation for:
-- File deletions, breaking API changes, altering authentication/security.
-- Database schema edits that could affect existing data.
-- Production deployment config or environment changes.
+- File deletions, breaking API changes, altering authentication/security
+- Database schema edits that could affect existing data
+- Production deployment config or environment changes
 
 **Always** explain reasoning when adding new dependencies or external APIs.
 Treat environment containing `LIVE_DB_URL` or `PUBLIC_APP=true` as production — no autonomous changes allowed there.
 
 ## Code Style
 
-- Use TypeScript strict mode - no `any` types unless absolutely necessary
+- TypeScript strict mode - no `any` types unless absolutely necessary
 - Prefer named exports over default exports
-- Use descriptive variable names - avoid abbreviations
 - Keep components small and focused (< 150 lines)
-- Colocate related files (component + styles + tests in same folder)
 
-## Project Structure
+## Common Patterns
 
+**Adding a Supabase query:**
+1. Add function to `lib/supabase/queries.ts` using browser client
+2. Add Zustand store state/actions if UI needs to cache it
+3. Call from component
+
+**Adding a shadcn/ui component:**
+```bash
+npx shadcn@latest add <component-name>
 ```
-/app          # Next.js App Router pages and layouts
-/components   # Reusable UI components
-/lib          # Utilities, API clients, helpers
-/hooks        # Custom React hooks
-/stores       # Zustand stores
-/types        # TypeScript type definitions
-/docs         # Documentation (PRD, etc.)
-```
 
-## Database
+**Adding an OpenAI tool:**
+1. Define schema in `lib/openai/tools.ts`
+2. Handle tool call in `app/api/chat/route.ts`
 
-- All database changes go through Supabase migrations
-- Never bypass RLS policies - all queries should respect user ownership
-- Use the existing schema in `docs/prd.md` as source of truth
+## Key Files
 
-## LLM Integration
-
-- Use OpenAI GPT-4o-mini for all LLM calls
-- Stream responses for chat interactions
-- Always include error handling for API failures
-- Keep system prompts in separate files for maintainability
-
-## Testing
-
-- Write tests for critical business logic
-- Test LLM prompt outputs with example inputs
-- Ensure auth flows are tested
-
-## Security
-
-- Never commit API keys or secrets
-- Use environment variables for all sensitive config
-- Validate all user inputs before sending to LLM
+- `app/app/page.tsx` - Main orchestrator (data loading, mutations, streaming)
+- `stores/useAppStore.ts` - Global state
+- `lib/supabase/queries.ts` - All database operations
+- `app/api/chat/route.ts` - LLM streaming endpoint
+- `lib/prompts/coaching.ts` - System prompt builder
+- `lib/openai/tools.ts` - Function calling schemas

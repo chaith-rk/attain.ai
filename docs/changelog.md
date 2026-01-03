@@ -6,6 +6,32 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Docs: Enhanced CLAUDE.md with Architecture Guide
+
+Improved CLAUDE.md to help future AI assistants be productive quickly in the codebase.
+
+### Added
+- Development commands section (npm run dev, build, lint)
+- Architecture overview with data flow pattern
+- State management architecture (goal-scoped state pattern)
+- Supabase client pattern (browser vs server usage)
+- LLM streaming flow (5-step summary)
+- Common patterns (adding queries, shadcn components, OpenAI tools)
+- Key files reference table
+
+### Changed
+- Trimmed documentation from verbose to essential patterns only
+- Focused on "what you need to know to not break things"
+- Condensed documentation standards to core principles
+
+### Why
+- AI assistants need quick-start architecture context that spans multiple files
+- Original CLAUDE.md was comprehensive on workflow but lacked architectural patterns
+- Reduced from 296 to 178 lines while adding critical architecture insights
+- Helps future Claude instances understand data flow without reading 50+ files
+
+---
+
 ## [2026-01-01] Docs: Enhanced OpenAI API Setup Instructions
 
 Improved README documentation to clarify OpenAI Platform API setup requirements.
