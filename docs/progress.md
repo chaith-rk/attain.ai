@@ -104,11 +104,9 @@ Foundation is in place.
 
 ---
 
-## Phase 3: Chat UI + Basic LLM 🟡
+## Phase 3: Chat UI + Basic LLM ✅
 
 **Goal:** Chat interface works, LLM responds conversationally (no table updates yet).
-
-**Status:** Code complete, pending end-to-end testing with OpenAI API key.
 
 | Task | Status | Notes |
 |------|--------|-------|
@@ -125,15 +123,13 @@ Foundation is in place.
 | Auto-scroll on new messages | ✅ | useRef + useEffect in ChatView |
 | Add function calling tools | ✅ | update_intent tool in lib/openai/tools.ts |
 
-### Exit Criteria (Pending Testing)
-- [ ] Can send message, see streaming response
-- [ ] Messages persist across page refresh
-- [ ] LLM knows goal title/description
-- [ ] Chat feels responsive
+### Exit Criteria
+- [x] Can send message, see streaming response
+- [x] Messages persist across page refresh
+- [x] LLM knows goal title/description
+- [x] Chat feels responsive
 
-**Next Steps:** Add OPENAI_API_KEY to .env.local, test chat end-to-end
-
-**Milestone:** Working chat with LLM (conversation only) ✨ *(not yet verified)*
+**Milestone:** Working chat with LLM (conversation only) ✨
 
 ---
 
@@ -304,7 +300,7 @@ Foundation is in place.
 | 0 | Project Setup | ✅ |
 | 1 | Auth + Layout Shell | ✅ |
 | 2 | Goal CRUD + Table + Manual Edit | ✅ |
-| 3 | Chat UI + Basic LLM | 🟡 (code complete, pending testing) |
+| 3 | Chat UI + Basic LLM | ✅ |
 | 4 | LLM → Intent (today/tomorrow) | ⬜ |
 | 5 | LLM → Action + Notes | ⬜ |
 | 6 | LLM → Any Date | ⬜ |
@@ -312,4 +308,4 @@ Foundation is in place.
 | 8 | Multi-Goal + Polish | ⬜ |
 | 9 | Deploy | ⬜ |
 
-**Overall Progress:** 3 / 10 phases complete, Phase 3 in progress (awaiting API key testing)
+**Overall Progress:** 4 / 10 phases complete
