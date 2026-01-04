@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCoachingSystemPrompt } from '@/lib/prompts/coaching'
 import { tools } from '@/lib/openai/tools'
+import { withIntentUpdate } from '@/lib/intentUpdates'
 import OpenAI from 'openai'
 import type { ResponseInputItem, ResponseStreamEvent } from 'openai/resources/responses/responses'
 
@@ -133,57 +134,51 @@ export async function POST(req: Request) {
             }
           }
 
-          // Execute tool calls if any
+          // Build pending intent updates (require user confirmation)
           if (toolCalls.length > 0) {
+            const today = new Date().toISOString().split('T')[0]
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+            const pendingItems: Array<{
+              id: string
+              date: string
+              label: string
+              intent: string
+              status: 'pending'
+            }> = []
+
             for (const toolCall of toolCalls) {
-              if (toolCall.name === 'update_intent') {
-                try {
-                  const args = JSON.parse(toolCall.arguments)
-                  const { date, intent } = args
+              if (toolCall.name !== 'update_intent') continue
+              try {
+                const args = JSON.parse(toolCall.arguments)
+                const { date, intent } = args
+                const targetDate = date === 'today' ? today : tomorrow
+                const label = targetDate === today ? 'Today' : targetDate === tomorrow ? 'Tomorrow' : targetDate
 
-                  // Resolve date to actual date string
-                  const today = new Date().toISOString().split('T')[0]
-                  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
-                  const targetDate = date === 'today' ? today : tomorrow
-
-                  // Find or create goal_day
-                  const { data: goalDay, error: fetchError } = await supabase
-                    .from('goal_days')
-                    .select('*')
-                    .eq('goal_id', goalId)
-                    .eq('date', targetDate)
-                    .single()
-
-                  if (fetchError || !goalDay) {
-                    // Create new goal_day if it doesn't exist
-                    const { error: createError } = await supabase
-                      .from('goal_days')
-                      .insert({
-                        goal_id: goalId,
-                        date: targetDate,
-                        intent,
-                      })
-                      .select()
-                      .single()
-
-                    if (createError) {
-                      console.error('Error creating goal_day:', createError)
-                    }
-                  } else {
-                    // Update existing goal_day
-                    const { error: updateError } = await supabase
-                      .from('goal_days')
-                      .update({ intent })
-                      .eq('id', goalDay.id)
-
-                    if (updateError) {
-                      console.error('Error updating intent:', updateError)
-                    }
-                  }
-                } catch (error) {
-                  console.error('Error processing tool call:', error)
-                }
+                pendingItems.push({
+                  id: crypto.randomUUID(),
+                  date: targetDate,
+                  label,
+                  intent,
+                  status: 'pending',
+                })
+              } catch (error) {
+                console.error('Error processing tool call:', error)
               }
+            }
+
+            if (pendingItems.length > 0) {
+              const assistantText = fullResponse.trim() || 'Please confirm the update below.'
+
+              if (!fullResponse.trim()) {
+                controller.enqueue(encoder.encode(assistantText))
+              }
+
+              const payload = { type: 'intent_update', items: pendingItems }
+              const tag = withIntentUpdate('', payload)
+              const separator = assistantText ? '\n\n' : ''
+
+              controller.enqueue(encoder.encode(`${separator}${tag}`))
+              fullResponse = withIntentUpdate(assistantText, payload)
             }
           }
 

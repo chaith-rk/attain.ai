@@ -15,6 +15,7 @@ interface GoalViewProps {
   messagesLoading: boolean
   onUpdateGoalDay: (goalDayId: string, field: 'intent' | 'action', value: string) => Promise<void>
   onSendMessage: (content: string) => Promise<void>
+  onConfirmIntentUpdate: (input: { goalId: string; messageId: string; itemId: string }) => Promise<void>
   onDeleteGoal: () => Promise<void>
   isSendingMessage: boolean
 }
@@ -27,6 +28,7 @@ export function GoalView({
   messagesLoading,
   onUpdateGoalDay,
   onSendMessage,
+  onConfirmIntentUpdate,
   onDeleteGoal,
   isSendingMessage,
 }: GoalViewProps) {
@@ -75,6 +77,7 @@ export function GoalView({
             goal={goal}
             messages={messages}
             onSendMessage={onSendMessage}
+            onConfirmIntentUpdate={onConfirmIntentUpdate}
             isLoading={isSendingMessage}
           />
         )}

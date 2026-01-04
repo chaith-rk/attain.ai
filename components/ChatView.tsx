@@ -11,10 +11,17 @@ interface ChatViewProps {
   goal: Goal
   messages: Message[]
   onSendMessage: (content: string) => Promise<void>
+  onConfirmIntentUpdate: (input: { goalId: string; messageId: string; itemId: string }) => Promise<void>
   isLoading: boolean
 }
 
-export function ChatView({ goal, messages, onSendMessage, isLoading }: ChatViewProps) {
+export function ChatView({
+  goal,
+  messages,
+  onSendMessage,
+  onConfirmIntentUpdate,
+  isLoading,
+}: ChatViewProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -78,7 +85,11 @@ export function ChatView({ goal, messages, onSendMessage, isLoading }: ChatViewP
         ) : (
           <>
             {messages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
+              <MessageBubble
+                key={message.id}
+                message={message}
+                onConfirmIntentUpdate={onConfirmIntentUpdate}
+              />
             ))}
             {isLoading && (
               <div className="flex justify-start mb-4">

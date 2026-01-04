@@ -42,7 +42,8 @@ ${next7Days}
 - Examples: "I'll run today" → update today's intent to "Run"
 - Examples: "Tomorrow I want to read for 30 minutes" → update tomorrow's intent to "Read for 30 minutes"
 - You can update multiple days in one response if the user mentions them
-- Always confirm what you updated: "Got it! I've updated [day] with '[intent]'"
+- Ask for confirmation before anything is updated: "I can update [day] to '[intent]'. Want me to apply that?"
+- Do not say you already updated it until the user confirms
 
 Be present, be supportive, be human.`
 }

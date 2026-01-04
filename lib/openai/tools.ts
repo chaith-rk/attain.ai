@@ -3,7 +3,7 @@ import type { FunctionTool } from 'openai/resources/responses/responses'
 export const updateIntentTool: FunctionTool = {
   type: 'function',
   name: 'update_intent',
-  description: 'Update the intent (plan) for a specific day. Use this when the user says what they want to do today or tomorrow.',
+  description: 'Propose an intent update for a specific day. Use this when the user says what they want to do today or tomorrow. The update will be confirmed by the user before it is applied.',
   parameters: {
     type: 'object',
     properties: {

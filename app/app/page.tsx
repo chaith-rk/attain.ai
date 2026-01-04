@@ -197,6 +197,31 @@ export default function AppPage() {
     [selectedGoalId, isSendingMessage, addMessage, messages, setMessages, setGoalDays]
   )
 
+  const handleConfirmIntentUpdate = useCallback(
+    async (input: { goalId: string; messageId: string; itemId: string }) => {
+      try {
+        const response = await fetch('/api/confirm-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to confirm intent update')
+        }
+
+        const updatedMessages = await fetchMessages(input.goalId)
+        setMessages(updatedMessages)
+
+        const updatedGoalDays = await fetchGoalDays(input.goalId)
+        setGoalDays(updatedGoalDays)
+      } catch (error) {
+        console.error('Failed to confirm intent update:', error)
+      }
+    },
+    [setMessages, setGoalDays]
+  )
+
   const handleSelectGoal = useCallback(
     (id: string) => {
       setSelectedGoalId(id)
@@ -229,6 +254,7 @@ export default function AppPage() {
             messagesLoading={messagesLoading}
             onUpdateGoalDay={handleUpdateGoalDay}
             onSendMessage={handleSendMessage}
+            onConfirmIntentUpdate={handleConfirmIntentUpdate}
             onDeleteGoal={handleDeleteGoal}
             isSendingMessage={isSendingMessage}
           />
