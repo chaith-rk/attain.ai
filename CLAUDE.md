@@ -53,15 +53,24 @@ Single Zustand store with **goal-scoped state**:
 
 All queries in `lib/supabase/queries.ts` use the browser client.
 
-### LLM Streaming Flow
+### LLM Integration (OpenAI Responses API)
+
+**API Used:** OpenAI Responses API (`openai.responses.create()`) — NOT Chat Completions
 
 1. User sends message → `app/app/page.tsx::handleSendMessage()`
 2. POST to `/api/chat/route.ts` with `goalId` + `message`
-3. API route builds context from goal + messages + goal_days
-4. OpenAI streams response back to client
-5. Client updates UI in real-time, then refetches messages from DB
+3. API route builds:
+   - `instructions`: System prompt from `lib/prompts/coaching.ts`
+   - `input`: Conversation history as `ResponseInputItem[]`
+   - `tools`: Function schemas from `lib/openai/tools.ts`
+4. OpenAI Responses API streams back via `response.output_text.delta` events
+5. Function calls come via `response.output_item.done` events with `type: 'function_call'`
+6. Client updates UI in real-time, then refetches messages from DB
 
-**Function calling:** `lib/openai/tools.ts` defines schemas. API route parses tool calls and executes them.
+**Why Responses API over Chat Completions:**
+- 40-80% better cache utilization (lower costs)
+- Better support for reasoning models (GPT-5, o-series)
+- Built-in tools available: web_search, file_search, code_interpreter
 
 ## Phase-Based Development
 
@@ -164,9 +173,19 @@ Treat environment containing `LIVE_DB_URL` or `PUBLIC_APP=true` as production �
 npx shadcn@latest add <component-name>
 ```
 
-**Adding an OpenAI tool:**
-1. Define schema in `lib/openai/tools.ts`
-2. Handle tool call in `app/api/chat/route.ts`
+**Adding an OpenAI tool (Responses API format):**
+1. Define schema in `lib/openai/tools.ts` using `FunctionTool` type:
+   ```typescript
+   const myTool: FunctionTool = {
+     type: 'function',
+     name: 'my_tool',
+     description: '...',
+     parameters: { type: 'object', properties: {...} },
+     strict: true
+   }
+   ```
+2. Add to `tools` array export
+3. Handle in `app/api/chat/route.ts` inside the `response.output_item.done` event handler
 
 ## Key Files
 

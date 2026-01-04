@@ -6,6 +6,36 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Refactor: Migrate from Chat Completions to Responses API
+
+Migrated OpenAI integration from Chat Completions API to the newer Responses API for improved performance and cost efficiency.
+
+### Changed
+- **`app/api/chat/route.ts`**: Refactored to use `openai.responses.create()` instead of `openai.chat.completions.create()`
+  - System message → `instructions` parameter
+  - Messages array → `input` parameter with `ResponseInputItem[]`
+  - Streaming events: `response.output_text.delta` for text, `response.output_item.done` for function calls
+- **`lib/openai/tools.ts`**: Updated tool type from `ChatCompletionTool` to `FunctionTool`
+  - Flattened structure: `function.name` → `name`, `function.parameters` → `parameters`
+  - Added `strict: true` for better parameter validation
+
+### Benefits
+- **Lower costs**: 40-80% better cache utilization according to OpenAI benchmarks
+- **Future-proof**: Better support for reasoning models (GPT-5, o-series)
+- **Built-in tools ready**: Can easily add web_search, file_search, code_interpreter
+- **Stateful option**: Can use `store: true` for server-side conversation state (not enabled yet)
+
+### Technical Notes
+- Endpoint changed from `/v1/chat/completions` to `/v1/responses`
+- Same model: `gpt-4o-mini`
+- Build verified: No TypeScript errors
+- Runtime: Edge (unchanged)
+
+### Migration Guide Reference
+- https://platform.openai.com/docs/guides/migrate-to-responses
+
+---
+
 ## [2026-01-03] Phase 3 Testing Complete: Chat + LLM Verified
 
 Successfully completed end-to-end testing of Phase 3 with OpenAI API integration.

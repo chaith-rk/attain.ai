@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCoachingSystemPrompt } from '@/lib/prompts/coaching'
 import { tools } from '@/lib/openai/tools'
 import OpenAI from 'openai'
-import type { ChatCompletionMessageParam, ChatCompletionChunk } from 'openai/resources/chat/completions'
+import type { ResponseInputItem, ResponseStreamEvent } from 'openai/resources/responses/responses'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -81,22 +81,18 @@ export async function POST(req: Request) {
       return new Response('Failed to fetch messages', { status: 500 })
     }
 
-    // Build messages for OpenAI
-    const openaiMessages: ChatCompletionMessageParam[] = [
-      {
-        role: 'system',
-        content: getCoachingSystemPrompt(goal, goalDays || []),
-      },
-      ...messages.map((msg) => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-      })),
-    ]
+    // Build input for Responses API (conversation history)
+    const inputItems: ResponseInputItem[] = messages.map((msg) => ({
+      type: 'message' as const,
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content,
+    }))
 
-    // Call OpenAI with streaming and tools
-    const response = await openai.chat.completions.create({
+    // Call OpenAI Responses API with streaming
+    const response = await openai.responses.create({
       model: 'gpt-4o-mini',
-      messages: openaiMessages,
+      instructions: getCoachingSystemPrompt(goal, goalDays || []),
+      input: inputItems,
       tools,
       temperature: 0.7,
       stream: true,
@@ -105,45 +101,34 @@ export async function POST(req: Request) {
     // Create a custom readable stream
     const encoder = new TextEncoder()
     let fullResponse = ''
-    let toolCalls: Array<{
+    const toolCalls: Array<{
       id: string
       name: string
       arguments: string
     }> = []
-    let currentToolCall: { id?: string; name?: string; arguments?: string } | null = null
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of response) {
-            const delta = chunk.choices[0]?.delta
-
-            // Handle content streaming
-            if (delta?.content) {
-              fullResponse += delta.content
-              controller.enqueue(encoder.encode(delta.content))
+          for await (const event of response as AsyncIterable<ResponseStreamEvent>) {
+            // Handle text content delta
+            if (event.type === 'response.output_text.delta') {
+              const delta = event.delta
+              if (delta) {
+                fullResponse += delta
+                controller.enqueue(encoder.encode(delta))
+              }
             }
 
-            // Handle tool calls
-            if (delta?.tool_calls) {
-              for (const toolCall of delta.tool_calls) {
-                if (toolCall.index !== undefined) {
-                  if (!currentToolCall || toolCall.index > toolCalls.length - 1) {
-                    // Start new tool call
-                    currentToolCall = {
-                      id: toolCall.id || '',
-                      name: toolCall.function?.name || '',
-                      arguments: toolCall.function?.arguments || '',
-                    }
-                    toolCalls.push(currentToolCall as any)
-                  } else {
-                    // Continue existing tool call
-                    currentToolCall = toolCalls[toolCall.index]
-                    if (toolCall.function?.arguments) {
-                      currentToolCall.arguments += toolCall.function.arguments
-                    }
-                  }
-                }
+            // Handle function call completion
+            if (event.type === 'response.output_item.done') {
+              const item = event.item
+              if (item.type === 'function_call') {
+                toolCalls.push({
+                  id: item.call_id,
+                  name: item.name,
+                  arguments: item.arguments,
+                })
               }
             }
           }
@@ -162,7 +147,7 @@ export async function POST(req: Request) {
                   const targetDate = date === 'today' ? today : tomorrow
 
                   // Find or create goal_day
-                  let { data: goalDay, error: fetchError } = await supabase
+                  const { data: goalDay, error: fetchError } = await supabase
                     .from('goal_days')
                     .select('*')
                     .eq('goal_id', goalId)
@@ -171,7 +156,7 @@ export async function POST(req: Request) {
 
                   if (fetchError || !goalDay) {
                     // Create new goal_day if it doesn't exist
-                    const { data: newGoalDay, error: createError } = await supabase
+                    const { error: createError } = await supabase
                       .from('goal_days')
                       .insert({
                         goal_id: goalId,
