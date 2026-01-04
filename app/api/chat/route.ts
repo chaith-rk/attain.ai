@@ -11,6 +11,21 @@ const openai = new OpenAI({
 
 export const runtime = 'edge'
 
+function isDateQuestion(message: string): boolean {
+  const normalized = message.trim().toLowerCase()
+  return (
+    normalized === 'what is today\'s date' ||
+    normalized === "what's today's date" ||
+    normalized === 'what is the date' ||
+    normalized === "what's the date" ||
+    normalized === 'what day is it' ||
+    normalized === "what's today" ||
+    normalized.includes('today\'s date') ||
+    normalized.includes("today's date") ||
+    normalized.includes('current date')
+  )
+}
+
 function formatDateISO(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -61,7 +76,7 @@ export async function POST(req: Request) {
     tomorrowDate.setDate(now.getDate() + 1)
     const tomorrowISO = formatDateISO(tomorrowDate, timeZone)
     const todayHuman = formatDateHuman(now, timeZone)
-    const tomorrowHuman = formatDateHuman(tomorrowDate, timeZone)
+  const tomorrowHuman = formatDateHuman(tomorrowDate, timeZone)
 
     // Fetch goal
     const { data: goal, error: goalError } = await supabase
@@ -88,6 +103,26 @@ export async function POST(req: Request) {
     if (userMessageError) {
       console.error('Error saving user message:', userMessageError)
       return new Response('Failed to save message', { status: 500 })
+    }
+
+    if (isDateQuestion(message)) {
+      const assistantContent = `Today is ${todayHuman}.`
+      const { error: assistantMessageError } = await supabase
+        .from('messages')
+        .insert({
+          user_id: user.id,
+          goal_id: goalId,
+          role: 'assistant',
+          content: assistantContent,
+        })
+
+      if (assistantMessageError) {
+        console.error('Error saving assistant message:', assistantMessageError)
+      }
+
+      return new Response(assistantContent, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      })
     }
 
     // Fetch goal days for context
