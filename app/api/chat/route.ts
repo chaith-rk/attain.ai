@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCoachingSystemPrompt } from '@/lib/prompts/coaching'
 import { tools } from '@/lib/openai/tools'
 import { withIntentUpdate } from '@/lib/intentUpdates'
+import type { IntentUpdatePayload } from '@/lib/intentUpdates'
 import OpenAI from 'openai'
 import type { ResponseInputItem, ResponseStreamEvent } from 'openai/resources/responses/responses'
 
@@ -256,7 +257,7 @@ export async function POST(req: Request) {
                 controller.enqueue(encoder.encode(assistantText))
               }
 
-              const payload = { type: 'intent_update', items: pendingItems }
+              const payload: IntentUpdatePayload = { type: 'intent_update', items: pendingItems }
               const tag = withIntentUpdate('', payload)
               const separator = assistantText ? '\n\n' : ''
 

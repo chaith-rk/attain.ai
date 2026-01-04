@@ -6,6 +6,15 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Fix: Build Type Safety for Intent Payload
+
+Resolved a TypeScript error by typing the intent-update payload explicitly in the chat API.
+
+### Changed
+- **`app/api/chat/route.ts`**: Typed pending intent payload as `IntentUpdatePayload` to satisfy the build.
+
+---
+
 ## [2026-01-03] Phase 4 Complete: LLM → Intent (Today/Tomorrow)
 
 Enabled LLM to update the table's intent column when users say what they plan to do today or tomorrow.
