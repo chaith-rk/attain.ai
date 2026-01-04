@@ -1,9 +1,20 @@
 import type { Goal, GoalDay } from '@/types'
 
-export function getCoachingSystemPrompt(goal: Goal, goalDays: GoalDay[]): string {
+interface PromptDateContext {
+  todayISO?: string
+  tomorrowISO?: string
+  todayHuman?: string
+  tomorrowHuman?: string
+}
+
+export function getCoachingSystemPrompt(
+  goal: Goal,
+  goalDays: GoalDay[],
+  dateContext: PromptDateContext = {}
+): string {
   // Format goal days for context
-  const today = new Date().toISOString().split('T')[0]
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  const today = dateContext.todayISO || new Date().toISOString().split('T')[0]
+  const tomorrow = dateContext.tomorrowISO || new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
   const todayDay = goalDays.find(gd => gd.date === today)
   const tomorrowDay = goalDays.find(gd => gd.date === tomorrow)
@@ -21,6 +32,10 @@ ${goal.description ? `Description: ${goal.description}` : ''}
 
 **Next 7 Days:**
 ${next7Days}
+
+**Date Context:**
+Today is ${dateContext.todayHuman || today}
+Tomorrow is ${dateContext.tomorrowHuman || tomorrow}
 
 **Your Role:**
 - Be warm, supportive, and encouraging - like a good therapist friend

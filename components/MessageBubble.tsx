@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import type { Message } from '@/types'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { parseIntentUpdate } from '@/lib/intentUpdates'
+import { IntentConfirmCard } from '@/components/IntentConfirmCard'
 
 interface MessageBubbleProps {
   message: Message
@@ -53,27 +53,15 @@ export function MessageBubble({ message, onConfirmIntentUpdate }: MessageBubbleP
         {!isUser && payload?.type === 'intent_update' && payload.items.length > 0 && (
           <div className={cn('mt-2 flex flex-col gap-2', text ? '' : 'mt-0')}>
             {payload.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-full border bg-background/60 px-3 py-1 text-xs"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{item.label}</span>
-                  <span className="text-muted-foreground">{item.intent}</span>
-                </div>
+              <div key={item.id}>
                 {item.status === 'confirmed' ? (
-                  <span className="text-emerald-600">Confirmed</span>
+                  <div className="text-xs text-emerald-600">Confirmed</div>
                 ) : (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="h-7 px-3 text-xs"
-                    disabled={!onConfirmIntentUpdate || confirmingIds.includes(item.id)}
-                    onClick={() => handleConfirm(item.id)}
-                  >
-                    {confirmingIds.includes(item.id) ? 'Updating...' : 'Confirm'}
-                  </Button>
+                  <IntentConfirmCard
+                    intentText={item.intent}
+                    dateISO={item.date}
+                    onConfirm={() => handleConfirm(item.id)}
+                  />
                 )}
               </div>
             ))}

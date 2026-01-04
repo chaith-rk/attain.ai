@@ -11,6 +11,24 @@ const openai = new OpenAI({
 
 export const runtime = 'edge'
 
+function formatDateISO(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date)
+}
+
+function formatDateHuman(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(date)
+}
+
 export async function POST(req: Request) {
   try {
     const { goalId, message } = await req.json()
@@ -29,6 +47,21 @@ export async function POST(req: Request) {
     if (authError || !user) {
       return new Response('Unauthorized', { status: 401 })
     }
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('timezone')
+      .eq('id', user.id)
+      .single()
+
+    const timeZone = profile?.timezone || 'UTC'
+    const now = new Date()
+    const todayISO = formatDateISO(now, timeZone)
+    const tomorrowDate = new Date(now)
+    tomorrowDate.setDate(now.getDate() + 1)
+    const tomorrowISO = formatDateISO(tomorrowDate, timeZone)
+    const todayHuman = formatDateHuman(now, timeZone)
+    const tomorrowHuman = formatDateHuman(tomorrowDate, timeZone)
 
     // Fetch goal
     const { data: goal, error: goalError } = await supabase
@@ -92,7 +125,12 @@ export async function POST(req: Request) {
     // Call OpenAI Responses API with streaming
     const response = await openai.responses.create({
       model: 'gpt-4o-mini',
-      instructions: getCoachingSystemPrompt(goal, goalDays || []),
+      instructions: getCoachingSystemPrompt(goal, goalDays || [], {
+        todayISO,
+        tomorrowISO,
+        todayHuman,
+        tomorrowHuman,
+      }),
       input: inputItems,
       tools,
       temperature: 0.7,
@@ -136,8 +174,8 @@ export async function POST(req: Request) {
 
           // Build pending intent updates (require user confirmation)
           if (toolCalls.length > 0) {
-            const today = new Date().toISOString().split('T')[0]
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+            const today = todayISO
+            const tomorrow = tomorrowISO
             const pendingItems: Array<{
               id: string
               date: string
