@@ -26,6 +26,16 @@ function isDateQuestion(message: string): boolean {
   )
 }
 
+function resolveTimeZone(candidate?: string): string {
+  if (!candidate) return 'UTC'
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: candidate }).format(new Date())
+    return candidate
+  } catch {
+    return 'UTC'
+  }
+}
+
 function formatDateISO(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -46,7 +56,7 @@ function formatDateHuman(date: Date, timeZone: string): string {
 
 export async function POST(req: Request) {
   try {
-    const { goalId, message } = await req.json()
+    const { goalId, message, timezone } = await req.json()
 
     if (!goalId || !message) {
       return new Response('Missing goalId or message', { status: 400 })
@@ -69,7 +79,7 @@ export async function POST(req: Request) {
       .eq('id', user.id)
       .single()
 
-    const timeZone = profile?.timezone || 'UTC'
+    const timeZone = resolveTimeZone(timezone || profile?.timezone)
     const now = new Date()
     const todayISO = formatDateISO(now, timeZone)
     const tomorrowDate = new Date(now)

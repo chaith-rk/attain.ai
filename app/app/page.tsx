@@ -133,6 +133,8 @@ export default function AppPage() {
       setIsSendingMessage(true)
 
       try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
         // Add user message to UI immediately
         const userMessage: Partial<Message> = {
           id: crypto.randomUUID(),
@@ -147,7 +149,11 @@ export default function AppPage() {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ goalId: selectedGoalId, message: content }),
+          body: JSON.stringify({
+            goalId: selectedGoalId,
+            message: content,
+            timezone,
+          }),
         })
 
         if (!response.ok) {

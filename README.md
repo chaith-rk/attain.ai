@@ -122,6 +122,11 @@ See `CLAUDE.md` for detailed development guidelines including:
 - Commit message format
 - Pre-approved actions
 
+## Timezone Handling
+
+The app sends the browser timezone with each chat request to ensure "today" and "tomorrow"
+resolve correctly for the current session. The profile timezone remains a fallback.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
