@@ -6,6 +6,15 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] UI: Show Only Confirmation Card
+
+Hide assistant text when a confirmation card is shown, leaving a single compact card.
+
+### Changed
+- **`components/MessageBubble.tsx`**: Suppress assistant message text when intent confirmation payload is present.
+
+---
+
 ## [2026-01-03] Fix: Local Date Formatting for Goal Days
 
 Goal-day generation now uses local calendar dates instead of UTC ISO strings to prevent off-by-one day shifts.

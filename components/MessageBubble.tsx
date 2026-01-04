@@ -14,6 +14,8 @@ interface MessageBubbleProps {
 export function MessageBubble({ message, onConfirmIntentUpdate }: MessageBubbleProps) {
   const isUser = message.role === 'user'
   const { text, payload } = parseIntentUpdate(message.content)
+  const hideTextForConfirmCard =
+    !isUser && payload?.type === 'intent_update' && payload.items.length > 0
   const [confirmingIds, setConfirmingIds] = useState<string[]>([])
 
   const handleConfirm = async (itemId: string) => {
@@ -45,7 +47,7 @@ export function MessageBubble({ message, onConfirmIntentUpdate }: MessageBubbleP
             : 'bg-muted text-foreground'
         )}
       >
-        {text && (
+        {text && !hideTextForConfirmCard && (
           <p className="text-sm whitespace-pre-wrap break-words">
             {text}
           </p>
