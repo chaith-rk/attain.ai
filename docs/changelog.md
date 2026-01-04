@@ -18,6 +18,7 @@ Migrated OpenAI integration from Chat Completions API to the newer Responses API
 - **`lib/openai/tools.ts`**: Updated tool type from `ChatCompletionTool` to `FunctionTool`
   - Flattened structure: `function.name` → `name`, `function.parameters` → `parameters`
   - Added `strict: true` for better parameter validation
+  - **Required:** `additionalProperties: false` in parameters schema (API rejects without it)
 
 ### Benefits
 - **Lower costs**: 40-80% better cache utilization according to OpenAI benchmarks
