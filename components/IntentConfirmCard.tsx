@@ -14,14 +14,16 @@ function formatIntentDate(dateISO: string): string {
 }
 
 interface IntentConfirmCardProps {
-  intentText: string
+  label: string
+  valueText: string
   dateISO: string
   onConfirm: () => void
   status?: 'pending' | 'confirmed'
 }
 
 export function IntentConfirmCard({
-  intentText,
+  label,
+  valueText,
   dateISO,
   onConfirm,
   status = 'pending',
@@ -30,8 +32,8 @@ export function IntentConfirmCard({
     <div className="flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-muted/40 px-4 py-3 shadow-sm">
       <div className="flex flex-col gap-1">
         <div className="text-xs text-muted-foreground">
-          <span className="mr-2">Intent:</span>
-          <span className="text-sm font-medium text-foreground">{intentText}</span>
+          <span className="mr-2">{label}:</span>
+          <span className="text-sm font-medium text-foreground">{valueText}</span>
         </div>
         <div className="text-xs text-muted-foreground">
           <span className="mr-2">Date:</span>

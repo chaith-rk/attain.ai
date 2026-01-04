@@ -57,7 +57,8 @@ export function MessageBubble({ message, onConfirmIntentUpdate }: MessageBubbleP
             {payload.items.map((item) => (
               <div key={item.id}>
                 <IntentConfirmCard
-                  intentText={item.intent}
+                  label={item.label}
+                  valueText={item.value}
                   dateISO={item.date}
                   onConfirm={() => handleConfirm(item.id)}
                   status={item.status}

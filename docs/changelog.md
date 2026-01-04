@@ -15,6 +15,23 @@ Hide assistant text when a confirmation card is shown, leaving a single compact 
 
 ---
 
+## [2026-01-03] Feature: Action Updates with Confirmation + Notes
+
+Added action update tool, confirmation cards for actions, and LLM-generated supportive notes.
+
+### Changed
+- **`lib/openai/tools.ts`**: Added `update_action` tool schema.
+- **`lib/prompts/coaching.ts`**: Prompt now covers actions, confirmation, and notes generation.
+- **`app/api/chat/route.ts`**: Emits pending action updates into the confirmation payload.
+- **`app/api/confirm-intent/route.ts`**: Applies intent/action updates and calls LLM to generate notes after action.
+- **`components/MessageBubble.tsx` + `components/IntentConfirmCard.tsx`**: Cards now show Intent or Action value with confirmed state only.
+- **`lib/intentUpdates.ts`**: Payload now carries field/value for intent or action.
+
+### Notes
+- Notes are brief (<=200 chars), supportive, and generated via an additional LLM call after action is applied.
+
+---
+
 ## [2026-01-03] Fix: Local Date Formatting for Goal Days
 
 Goal-day generation now uses local calendar dates instead of UTC ISO strings to prevent off-by-one day shifts.

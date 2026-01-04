@@ -23,4 +23,27 @@ export const updateIntentTool: FunctionTool = {
   strict: true,
 }
 
-export const tools: FunctionTool[] = [updateIntentTool]
+export const updateActionTool: FunctionTool = {
+  type: 'function',
+  name: 'update_action',
+  description: 'Propose an action (what actually happened) for a specific day. Always call this when the user reports what they did today or tomorrow, even if you are asking for confirmation.',
+  parameters: {
+    type: 'object',
+    properties: {
+      date: {
+        type: 'string',
+        enum: ['today', 'tomorrow'],
+        description: 'Which day to update - either "today" or "tomorrow"',
+      },
+      action: {
+        type: 'string',
+        description: 'What the user actually did on this day. Be concise (under 200 chars). Extract the core action from what they said.',
+      },
+    },
+    required: ['date', 'action'],
+    additionalProperties: false,
+  },
+  strict: true,
+}
+
+export const tools: FunctionTool[] = [updateIntentTool, updateActionTool]

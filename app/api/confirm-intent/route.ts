@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { updateIntentUpdateStatus } from '@/lib/intentUpdates'
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
 
 export const runtime = 'edge'
 
@@ -38,7 +43,7 @@ export async function POST(req: Request) {
       return new Response('Pending update not found', { status: 400 })
     }
 
-    const { data: goalDay, error: fetchError } = await supabase
+    let { data: goalDay, error: fetchError } = await supabase
       .from('goal_days')
       .select('*')
       .eq('goal_id', goalId)
@@ -46,12 +51,12 @@ export async function POST(req: Request) {
       .single()
 
     if (fetchError || !goalDay) {
-      const { error: createError } = await supabase
+      const { data: createdGoalDay, error: createError } = await supabase
         .from('goal_days')
         .insert({
           goal_id: goalId,
           date: item.date,
-          intent: item.intent,
+          [item.field]: item.value,
         })
         .select()
         .single()
@@ -60,15 +65,69 @@ export async function POST(req: Request) {
         console.error('Error creating goal_day:', createError)
         return new Response('Failed to apply update', { status: 500 })
       }
+      goalDay = createdGoalDay
     } else {
       const { error: updateError } = await supabase
         .from('goal_days')
-        .update({ intent: item.intent })
+        .update({ [item.field]: item.value })
         .eq('id', goalDay.id)
 
       if (updateError) {
-        console.error('Error updating intent:', updateError)
+        console.error('Error updating goal_day:', updateError)
         return new Response('Failed to apply update', { status: 500 })
+      }
+
+    }
+
+    // If action was applied, generate notes using LLM
+    if (item.field === 'action') {
+      const { data: refreshedGoalDay, error: refreshedError } = await supabase
+        .from('goal_days')
+        .select('*')
+        .eq('goal_id', goalId)
+        .eq('date', item.date)
+        .single()
+
+      if (refreshedError || !refreshedGoalDay) {
+        console.error('Error refetching goal_day for notes:', refreshedError)
+      } else {
+        try {
+          const intentText = refreshedGoalDay.intent || ''
+          const actionText = refreshedGoalDay.action || item.value
+          const instructions = [
+            'You are a supportive coach. Write a brief note (<=200 chars) comparing intent vs action.',
+            'Tone: supportive, no judgment. Acknowledge partial wins.',
+            'If no intent exists, just reflect positively on the action.',
+          ].join('\n')
+
+          const response = await openai.responses.create({
+            model: 'gpt-4o-mini',
+            instructions,
+            input: [
+              {
+                role: 'user',
+                content: `Intent: ${intentText || '(none)'}\nAction: ${actionText}`,
+              },
+            ],
+          })
+
+          const raw = response.output_text
+          const text =
+            Array.isArray(raw) ? raw.join(' ').trim() : (raw ? raw.trim() : '')
+
+          if (text) {
+            const { error: notesError } = await supabase
+              .from('goal_days')
+              .update({ notes: text })
+              .eq('id', refreshedGoalDay.id)
+
+            if (notesError) {
+              console.error('Error updating notes:', notesError)
+            }
+          }
+        } catch (error) {
+          console.error('Error generating notes:', error)
+        }
       }
     }
 

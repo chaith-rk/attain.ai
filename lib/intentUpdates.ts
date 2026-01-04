@@ -6,7 +6,8 @@ export interface IntentUpdateItem {
   id: string
   date: string
   label: string
-  intent: string
+  field: 'intent' | 'action'
+  value: string
   status: IntentUpdateStatus
 }
 

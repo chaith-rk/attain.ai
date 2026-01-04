@@ -59,26 +59,29 @@ function parseFallbackIntentUpdates(
   text: string,
   todayISO: string,
   tomorrowISO: string
-): Array<{ id: string; date: string; label: string; intent: string; status: 'pending' }> {
+): Array<{ id: string; date: string; label: string; field: 'intent' | 'action'; value: string; status: 'pending' }> {
   const patterns = [
-    /update (today|tomorrow)'s intent to ["“']([^"”']+)["”']/i,
-    /update (today|tomorrow) to ["“']([^"”']+)["”']/i,
-    /update (today|tomorrow) with ["“']([^"”']+)["”']/i,
+    { regex: /update (today|tomorrow)'s intent to ["“']([^"”']+)["”']/i, field: 'intent' as const },
+    { regex: /update (today|tomorrow) to ["“']([^"”']+)["”']/i, field: 'intent' as const },
+    { regex: /update (today|tomorrow) with ["“']([^"”']+)["”']/i, field: 'intent' as const },
+    { regex: /update (today|tomorrow)'s action to ["“']([^"”']+)["”']/i, field: 'action' as const },
+    { regex: /update (today|tomorrow) action to ["“']([^"”']+)["”']/i, field: 'action' as const },
   ]
 
-  for (const pattern of patterns) {
-    const match = text.match(pattern)
+  for (const { regex, field } of patterns) {
+    const match = text.match(regex)
     if (match) {
       const day = match[1].toLowerCase()
-      const intent = match[2].trim()
+      const value = match[2].trim()
       const targetDate = day === 'today' ? todayISO : tomorrowISO
-      const label = day === 'today' ? 'Today' : 'Tomorrow'
+      const label = field === 'intent' ? 'Intent' : 'Action'
       return [
         {
           id: crypto.randomUUID(),
           date: targetDate,
           label,
-          intent,
+          field,
+          value,
           status: 'pending',
         },
       ]
@@ -251,7 +254,7 @@ export async function POST(req: Request) {
             }
           }
 
-          // Build pending intent updates (require user confirmation)
+          // Build pending updates (intent/action) requiring user confirmation
           if (toolCalls.length > 0) {
             const today = todayISO
             const tomorrow = tomorrowISO
@@ -259,23 +262,37 @@ export async function POST(req: Request) {
               id: string
               date: string
               label: string
-              intent: string
+              field: 'intent' | 'action'
+              value: string
               status: 'pending'
             }> = []
 
             for (const toolCall of toolCalls) {
-              if (toolCall.name !== 'update_intent') continue
               try {
                 const args = JSON.parse(toolCall.arguments)
-                const { date, intent } = args
+                let field: 'intent' | 'action' | null = null
+                let value: string | null = null
+
+                if (toolCall.name === 'update_intent') {
+                  field = 'intent'
+                  value = args.intent
+                } else if (toolCall.name === 'update_action') {
+                  field = 'action'
+                  value = args.action
+                }
+
+                if (!field || !value || !args.date) continue
+
+                const { date } = args
                 const targetDate = date === 'today' ? today : tomorrow
-                const label = targetDate === today ? 'Today' : targetDate === tomorrow ? 'Tomorrow' : targetDate
+                const label = field === 'intent' ? 'Intent' : 'Action'
 
                 pendingItems.push({
                   id: crypto.randomUUID(),
                   date: targetDate,
                   label,
-                  intent,
+                  field,
+                  value,
                   status: 'pending',
                 })
               } catch (error) {

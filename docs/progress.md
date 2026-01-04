@@ -166,21 +166,22 @@ Foundation is in place.
 
 ---
 
-## Phase 5: LLM → Action + Notes ⬜
+## Phase 5: LLM → Action + Notes 🟡
 
 **Goal:** "I did my run" updates action, LLM auto-generates notes.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Add `update_action` function | ⬜ | `{ date: "today" \| "tomorrow", text }` |
-| Trigger notes generation | ⬜ | After action updated |
-| Notes compare intent vs action | ⬜ | Supportive tone |
-| Handle partial completion | ⬜ | "I ran 2 miles instead of 3" |
+| Add `update_action` function | ✅ | `{ date: "today" \| "tomorrow", action: string }` |
+| Trigger notes generation | 🟡 | LLM call after action applied; needs full test |
+| Notes compare intent vs action | 🟡 | Supportive tone, brief |
+| Handle partial completion | 🟡 | "I ran 2 miles instead of 3" |
 
 ### Test Cases
 - [ ] "I did it" → action = "Completed", notes generated
 - [ ] "I ran but only 2 miles" → action captures partial
 - [ ] "I skipped today" → action = "Skipped", supportive notes
+- [ ] "Tomorrow I’ll do yoga" then "I did it" next day → correct date
 
 ### Exit Criteria
 - [ ] Action + notes flow works for today/tomorrow
