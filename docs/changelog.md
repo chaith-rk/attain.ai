@@ -6,6 +6,15 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Fix: Show Confirm Card When Tool Calls Are Missing
+
+Added a fallback parser that derives pending intent updates from the assistant response text when the tool call is missing.
+
+### Changed
+- **`app/api/chat/route.ts`**: Parse confirmation phrasing and attach intent update payloads for the UI card.
+
+---
+
 ## [2026-01-03] Fix: Goal Days Start at Yesterday
 
 Adjusted goal-day generation to include yesterday, today, and the next five days.

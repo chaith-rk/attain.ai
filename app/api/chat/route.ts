@@ -55,6 +55,39 @@ function formatDateHuman(date: Date, timeZone: string): string {
   }).format(date)
 }
 
+function parseFallbackIntentUpdates(
+  text: string,
+  todayISO: string,
+  tomorrowISO: string
+): Array<{ id: string; date: string; label: string; intent: string; status: 'pending' }> {
+  const patterns = [
+    /update (today|tomorrow)'s intent to ["“']([^"”']+)["”']/i,
+    /update (today|tomorrow) to ["“']([^"”']+)["”']/i,
+    /update (today|tomorrow) with ["“']([^"”']+)["”']/i,
+  ]
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern)
+    if (match) {
+      const day = match[1].toLowerCase()
+      const intent = match[2].trim()
+      const targetDate = day === 'today' ? todayISO : tomorrowISO
+      const label = day === 'today' ? 'Today' : 'Tomorrow'
+      return [
+        {
+          id: crypto.randomUUID(),
+          date: targetDate,
+          label,
+          intent,
+          status: 'pending',
+        },
+      ]
+    }
+  }
+
+  return []
+}
+
 export async function POST(req: Request) {
   try {
     const { goalId, message, timezone } = await req.json()
@@ -263,6 +296,14 @@ export async function POST(req: Request) {
 
               controller.enqueue(encoder.encode(`${separator}${tag}`))
               fullResponse = withIntentUpdate(assistantText, payload)
+            }
+          } else {
+            const fallbackItems = parseFallbackIntentUpdates(fullResponse, todayISO, tomorrowISO)
+            if (fallbackItems.length > 0) {
+              const payload: IntentUpdatePayload = { type: 'intent_update', items: fallbackItems }
+              const tag = withIntentUpdate('', payload)
+              controller.enqueue(encoder.encode(`\n\n${tag}`))
+              fullResponse = withIntentUpdate(fullResponse.trim(), payload)
             }
           }
 
