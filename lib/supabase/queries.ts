@@ -1,6 +1,13 @@
 import { createClient } from './client'
 import type { Goal, GoalDay, Message } from '@/types'
 
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // Goals
 export async function fetchGoals(): Promise<Goal[]> {
   const supabase = createClient()
@@ -64,7 +71,7 @@ export async function fetchGoalDays(goalId: string): Promise<GoalDay[]> {
   for (let i = -1; i < 6; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() + i)
-    expectedDates.push(date.toISOString().split('T')[0])
+    expectedDates.push(formatLocalDate(date))
   }
 
   const existingDates = new Set(rows.map(row => row.date))
@@ -127,7 +134,7 @@ export async function createGoalWithDays(
   for (let i = -1; i < 6; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() + i)
-    dates.push(date.toISOString().split('T')[0])
+    dates.push(formatLocalDate(date))
   }
 
   const goalDays = await createGoalDays(goal.id, dates)

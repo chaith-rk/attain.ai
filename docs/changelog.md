@@ -6,6 +6,15 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Fix: Local Date Formatting for Goal Days
+
+Goal-day generation now uses local calendar dates instead of UTC ISO strings to prevent off-by-one day shifts.
+
+### Changed
+- **`lib/supabase/queries.ts`**: Use local date formatting when creating and backfilling goal_days.
+
+---
+
 ## [2026-01-03] Fix: Backfill Yesterday in Goal Days
 
 Ensures the table always starts with yesterday by creating missing goal_day rows when fetching.
