@@ -6,6 +6,15 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Fix: Goal Days Start at Yesterday
+
+Adjusted goal-day generation to include yesterday, today, and the next five days.
+
+### Changed
+- **`lib/supabase/queries.ts`**: Generate 7 days starting from yesterday instead of today.
+
+---
+
 ## [2026-01-03] Fix: Build Type Safety for Intent Payload
 
 Resolved a TypeScript error by typing the intent-update payload explicitly in the chat API.

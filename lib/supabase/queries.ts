@@ -102,10 +102,10 @@ export async function createGoalWithDays(
 ): Promise<{ goal: Goal; goalDays: GoalDay[] }> {
   const goal = await createGoal(title, description)
 
-  // Generate next 7 days (today + 6 days)
+  // Generate 7 days (yesterday + today + next 5 days)
   const dates: string[] = []
   const today = new Date()
-  for (let i = 0; i < 7; i++) {
+  for (let i = -1; i < 6; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() + i)
     dates.push(date.toISOString().split('T')[0])

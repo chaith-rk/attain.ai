@@ -148,7 +148,7 @@ User clicks "Create Goal" button
 
 ### Output After Confirmation
 - Goal created with title + description
-- 7 rows in goal_days (next 7 calendar days)
+- 7 rows in goal_days (yesterday + today + next 5 days)
 - At least 3 rows have intent filled (action is never pre-filled — it's what user actually did)
 - Chat history saved with goal_id
 
@@ -211,7 +211,7 @@ User clicks "Create Goal" button
 
 | Trigger | What Happens |
 |---------|--------------|
-| Goal creation | 7 rows created (next 7 days), at least 3 filled |
+| Goal creation | 7 rows created (yesterday + today + next 5 days), at least 3 filled |
 | User chats about future days | LLM creates rows as needed |
 | User says "repeat for a month" | LLM creates ~30 rows with pattern |
 | Time passes | Nothing auto-created |
