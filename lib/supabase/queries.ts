@@ -56,7 +56,26 @@ export async function fetchGoalDays(goalId: string): Promise<GoalDay[]> {
     .order('date', { ascending: true })
 
   if (error) throw error
-  return data || []
+  const rows = data || []
+
+  // Ensure yesterday + today + next 5 days exist for the table view.
+  const today = new Date()
+  const expectedDates: string[] = []
+  for (let i = -1; i < 6; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() + i)
+    expectedDates.push(date.toISOString().split('T')[0])
+  }
+
+  const existingDates = new Set(rows.map(row => row.date))
+  const missingDates = expectedDates.filter(date => !existingDates.has(date))
+
+  if (missingDates.length > 0) {
+    const created = await createGoalDays(goalId, missingDates)
+    return [...rows, ...created].sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  return rows
 }
 
 export async function createGoalDays(goalId: string, dates: string[]): Promise<GoalDay[]> {

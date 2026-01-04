@@ -6,6 +6,15 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Fix: Backfill Yesterday in Goal Days
+
+Ensures the table always starts with yesterday by creating missing goal_day rows when fetching.
+
+### Changed
+- **`lib/supabase/queries.ts`**: On fetch, create missing dates for yesterday through next 5 days.
+
+---
+
 ## [2026-01-03] Fix: Show Confirm Card When Tool Calls Are Missing
 
 Added a fallback parser that derives pending intent updates from the assistant response text when the tool call is missing.
