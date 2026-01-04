@@ -6,6 +6,46 @@ Format: [YYYY-MM-DD] Category: Description
 
 ---
 
+## [2026-01-03] Phase 4 Complete: LLM → Intent (Today/Tomorrow)
+
+Enabled LLM to update the table's intent column when users say what they plan to do today or tomorrow.
+
+### Changed
+- **`app/app/page.tsx`**: Added goal_days refetch after streaming completes
+  - Previously only refetched messages, now also refetches goal_days
+  - Ensures table updates are visible after LLM modifies intent via function calling
+  - Updated dependency array to include `setGoalDays`
+
+### How It Works
+1. User sends message: "I'll run today"
+2. API route executes `update_intent` function call during streaming
+3. Database updated with new intent
+4. UI refetches both messages and goal_days
+5. Table displays updated intent immediately
+
+### Already Implemented (from Phase 3)
+- `lib/openai/tools.ts`: `update_intent` tool with `date: "today" | "tomorrow"` and `intent: string`
+- `app/api/chat/route.ts`: Function call parsing and execution
+  - Resolves "today"/"tomorrow" to actual ISO dates
+  - Creates goal_day if it doesn't exist, updates if it does
+  - Validates and sanitizes input server-side
+- `lib/prompts/coaching.ts`: System prompt includes next 7 days context and update_intent usage instructions
+
+### Test Cases (Passing)
+- ✅ "I'll go for a run" → today's intent updated
+- ✅ "Tomorrow I want to read" → tomorrow's intent updated
+- ✅ "I'll run today and tomorrow" → both days updated
+- ✅ Table displays changes immediately after LLM response
+- ✅ No crashes on errors or malformed input
+
+### Technical Notes
+- Intent updates are atomic: either the whole transaction succeeds or it doesn't
+- LLM confirms updates in natural language: "Got it! I've updated today with 'Run'"
+- Function calling uses strict mode for better parameter validation
+- Phase 4 was mostly complete from Phase 3 implementation - only missing table refetch
+
+---
+
 ## [2026-01-03] Refactor: Migrate from Chat Completions to Responses API
 
 Migrated OpenAI integration from Chat Completions API to the newer Responses API for improved performance and cost efficiency.

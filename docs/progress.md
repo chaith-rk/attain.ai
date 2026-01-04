@@ -28,7 +28,7 @@ This document tracks implementation using a **risk-first, vertical-slice** appro
 | 1 | Auth + Layout Shell | None | ✅ |
 | 2 | Goal CRUD + Table + Manual Edit | None | ✅ |
 | 3 | Chat UI + Basic LLM | Conversation only | ✅ |
-| 4 | LLM → Intent (today/tomorrow) | Write intent | ⬜ |
+| 4 | LLM → Intent (today/tomorrow) | Write intent | ✅ |
 | 5 | LLM → Action + Notes | Write action, generate notes | ⬜ |
 | 6 | LLM → Any Date | Full date parsing | ⬜ |
 | 7 | Goal Creation via Chat | Structured output | ⬜ |
@@ -133,31 +133,31 @@ Foundation is in place.
 
 ---
 
-## Phase 4: LLM → Intent (Today/Tomorrow) ⬜
+## Phase 4: LLM → Intent (Today/Tomorrow) ✅
 
 **Goal:** "I'll run today" or "I'll run tomorrow" updates the intent column.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Define function calling schema | ⬜ | `update_intent: { date: "today" \| "tomorrow", text }` |
-| Add goal_days context to LLM | ⬜ | Next 7 days |
-| Parse function calls from response | ⬜ | |
-| Validate date resolves correctly | ⬜ | |
-| Apply update to database | ⬜ | |
-| Show "Updated" feedback | ⬜ | |
-| Refetch table to show change | ⬜ | |
-| Handle errors gracefully | ⬜ | |
+| Define function calling schema | ✅ | `update_intent: { date: "today" \| "tomorrow", intent: string }` (implemented in Phase 3) |
+| Add goal_days context to LLM | ✅ | Next 7 days sent in system prompt (implemented in Phase 3) |
+| Parse function calls from response | ✅ | Event handling in API route (implemented in Phase 3) |
+| Validate date resolves correctly | ✅ | ISO date resolution for today/tomorrow (implemented in Phase 3) |
+| Apply update to database | ✅ | Creates or updates goal_day (implemented in Phase 3) |
+| Show "Updated" feedback | ✅ | LLM confirms in natural language |
+| Refetch table to show change | ✅ | Added in Phase 4 |
+| Handle errors gracefully | ✅ | Try/catch blocks, no UI crashes |
 
 ### Test Cases
-- [ ] "I'll go for a run" → today's intent updated
-- [ ] "Tomorrow I want to read" → tomorrow's intent updated
-- [ ] "I'll run today and tomorrow" → both updated
-- [ ] Gibberish → no update, friendly response
+- [x] "I'll go for a run" → today's intent updated
+- [x] "Tomorrow I want to read" → tomorrow's intent updated
+- [x] "I'll run today and tomorrow" → both updated
+- [x] Gibberish → no update, friendly response
 
 ### Exit Criteria
-- [ ] 90%+ success on test cases
-- [ ] User sees table update after message
-- [ ] Errors don't crash the app
+- [x] 90%+ success on test cases
+- [x] User sees table update after message
+- [x] Errors don't crash the app
 
 **Milestone:** First LLM → table connection works ✨
 
@@ -301,11 +301,11 @@ Foundation is in place.
 | 1 | Auth + Layout Shell | ✅ |
 | 2 | Goal CRUD + Table + Manual Edit | ✅ |
 | 3 | Chat UI + Basic LLM | ✅ |
-| 4 | LLM → Intent (today/tomorrow) | ⬜ |
+| 4 | LLM → Intent (today/tomorrow) | ✅ |
 | 5 | LLM → Action + Notes | ⬜ |
 | 6 | LLM → Any Date | ⬜ |
 | 7 | Goal Creation via Chat | ⬜ |
 | 8 | Multi-Goal + Polish | ⬜ |
 | 9 | Deploy | ⬜ |
 
-**Overall Progress:** 4 / 10 phases complete
+**Overall Progress:** 5 / 10 phases complete

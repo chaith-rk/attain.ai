@@ -182,16 +182,19 @@ export default function AppPage() {
           }
         }
 
-        // Reload messages to get the saved assistant message with proper ID
+        // Reload messages and goal_days to get updates from LLM tool calls
         const updatedMessages = await fetchMessages(selectedGoalId)
         setMessages(updatedMessages)
+
+        const updatedGoalDays = await fetchGoalDays(selectedGoalId)
+        setGoalDays(updatedGoalDays)
       } catch (error) {
         console.error('Failed to send message:', error)
       } finally {
         setIsSendingMessage(false)
       }
     },
-    [selectedGoalId, isSendingMessage, addMessage, messages, setMessages]
+    [selectedGoalId, isSendingMessage, addMessage, messages, setMessages, setGoalDays]
   )
 
   const handleSelectGoal = useCallback(
