@@ -67,10 +67,12 @@ attain.ai is a goal achievement app that combines an LLM chat interface with a s
 
 - All timestamps stored in UTC
 - User's timezone stored as IANA string in user_profiles (e.g., "America/New_York")
+- Client sends current timezone with each chat request; server uses it as primary
+- Profile timezone is a fallback when client timezone is missing or invalid
 - goal_days.date stored as local DATE (not timestamp) — represents the user's calendar day
 - "Today", "yesterday", and "overdue" calculated using user's timezone
 - Day boundaries flip at local midnight, not UTC midnight
-- Use `date-fns-tz` library for timezone conversions
+- Use Intl.DateTimeFormat with explicit timeZone for date math and formatting
 
 ---
 
@@ -321,10 +323,17 @@ User clicks "Create Goal" button
 | Rule | Detail |
 |------|--------|
 | One question at a time | Don't overwhelm |
-| Confirm before bulk updates | "I'll mark Mon/Tue/Wed complete — right?" |
+| Confirm before updates | Show a confirmation card before any intent/action changes |
 | Summarize changes | "Updated: Tuesday action = ran 3 miles" |
 | Remember everything | Challenges, preferences, context |
 | Warm tone, not pushy | No guilt for missed days |
+
+### Confirmation UI
+
+When the assistant proposes a table change, it presents a compact confirmation card:
+- Shows "Intent" and "Date" on two lines
+- Includes a single "Confirm" button
+- On confirm, the update is applied and the card shows a confirmed state
 
 ### Switching Goals
 1. Save current chat state

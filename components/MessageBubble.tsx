@@ -54,15 +54,12 @@ export function MessageBubble({ message, onConfirmIntentUpdate }: MessageBubbleP
           <div className={cn('mt-2 flex flex-col gap-2', text ? '' : 'mt-0')}>
             {payload.items.map((item) => (
               <div key={item.id}>
-                {item.status === 'confirmed' ? (
-                  <div className="text-xs text-emerald-600">Confirmed</div>
-                ) : (
-                  <IntentConfirmCard
-                    intentText={item.intent}
-                    dateISO={item.date}
-                    onConfirm={() => handleConfirm(item.id)}
-                  />
-                )}
+                <IntentConfirmCard
+                  intentText={item.intent}
+                  dateISO={item.date}
+                  onConfirm={() => handleConfirm(item.id)}
+                  status={item.status}
+                />
               </div>
             ))}
           </div>

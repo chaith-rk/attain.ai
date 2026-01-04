@@ -46,6 +46,22 @@ Enabled LLM to update the table's intent column when users say what they plan to
 
 ---
 
+## [2026-01-03] Enhancement: Confirm Cards + Session Timezone
+
+Intent updates now require explicit confirmation, and date handling respects the user's current session timezone.
+
+### Changed
+- **`components/IntentConfirmCard.tsx`**: Added a compact confirmation card UI with intent/date summary and confirmed state
+- **`components/MessageBubble.tsx`**: Renders confirmation cards and confirmed states for pending updates
+- **`app/api/confirm-intent/route.ts`**: Applies updates only after user confirmation
+- **`app/api/chat/route.ts`**: Attaches pending intent updates and answers date questions using session timezone
+- **`app/app/page.tsx`**: Sends client timezone with each chat request
+
+### Why
+- Prevent accidental table changes by requiring explicit confirmation
+- Fix "today" responses near midnight by using the user's active timezone
+
+
 ## [2026-01-03] Refactor: Migrate from Chat Completions to Responses API
 
 Migrated OpenAI integration from Chat Completions API to the newer Responses API for improved performance and cost efficiency.

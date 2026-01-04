@@ -144,7 +144,8 @@ Foundation is in place.
 | Parse function calls from response | ✅ | Event handling in API route (implemented in Phase 3) |
 | Validate date resolves correctly | ✅ | ISO date resolution for today/tomorrow (implemented in Phase 3) |
 | Apply update to database | ✅ | Creates or updates goal_day (implemented in Phase 3) |
-| Show "Updated" feedback | ✅ | LLM confirms in natural language |
+| Require user confirmation before updates | ✅ | Confirmation card before applying intent changes |
+| Show confirmation feedback | ✅ | Card switches to confirmed state after apply |
 | Refetch table to show change | ✅ | Added in Phase 4 |
 | Handle errors gracefully | ✅ | Try/catch blocks, no UI crashes |
 
@@ -160,6 +161,8 @@ Foundation is in place.
 - [x] Errors don't crash the app
 
 **Milestone:** First LLM → table connection works ✨
+
+**Refinement:** Updates are now pending until the user confirms via the card UI, and timezone is sent per chat request.
 
 ---
 
